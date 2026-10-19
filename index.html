@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>창현고 업무 소통방</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  /* ── Toss Design System 컬러 토큰 ── */
+  :root {
+    --grey50:  #f9fafb; --grey100: #f2f4f6; --grey200: #e5e8eb;
+    --grey300: #d1d6db; --grey400: #b0b8c1; --grey500: #8b95a1;
+    --grey600: #6b7684; --grey700: #4e5968; --grey800: #333d4b; --grey900: #191f28;
+    --blue50:  #e8f3ff; --blue100: #c9e2ff; --blue200: #90c2ff;
+    --blue400: #4593fc; --blue500: #3182f6; --blue600: #2272eb; --blue700: #1b64da;
+    --red50:   #ffeeee; --red400: #f66570; --red500: #f04452;
+    --green50: #f0faf6; --green400: #15c47e; --green500: #03b26c;
+    --orange50:#fff3e0; --orange500:#fe9800; --orange700:#f57800;
+    --yellow50:#fff9e7; --yellow500:#ffc342;
+    --bg: #f2f4f6; --surface: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--grey900); font-size: 17px; line-height: 1.5; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--grey200); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; }
+  .header h1 { font-size: 17px; font-weight: 700; color: var(--grey900); letter-spacing: -0.3px; }
+  .header p { font-size: 13px; color: var(--grey500); margin-top: 2px; }
+  .week-selector { position: relative; }
+  .week-badge { background: var(--blue50); color: var(--blue500); font-size: 13px; font-weight: 700; padding: 0 16px; border-radius: 12px; cursor: pointer; border: none; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 52px; box-sizing: border-box; }
+  .week-badge:hover { background: var(--blue100); }
+  .week-dropdown { position: absolute; right: 0; top: calc(100% + 8px); background: var(--surface); border: 1px solid var(--grey200); border-radius: 14px; box-shadow: 0 8px 24px rgba(25,31,40,0.12); min-width: 170px; z-index: 30; overflow: hidden; display: none; }
+  .week-dropdown.open { display: block; }
+  .week-opt { padding: 12px 16px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--grey700); }
+  .week-opt:hover { background: var(--grey50); }
+  .week-opt.active { color: var(--blue500); font-weight: 700; }
+  .cur-tag  { font-size: 11px; background: var(--blue50); color: var(--blue500); padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 700; }
+  .past-tag { font-size: 11px; background: var(--orange50); color: var(--orange700); padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 700; }
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--grey200); padding: 0 20px; overflow-x: auto; }
+  .tab { padding: 13px 18px; font-size: 15px; border: none; background: none; cursor: pointer; color: var(--grey500); border-bottom: 2px solid transparent; font-weight: 500; white-space: nowrap; letter-spacing: -0.2px; }
+  .tab.active { color: var(--blue500); border-bottom-color: var(--blue500); font-weight: 700; }
+  .main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+
+  /* 부서 그리드 */
+  .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
+  .dept-card { background: var(--surface); border: 1px solid var(--grey200); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.15s; }
+  .dept-card:hover { border-color: var(--blue400); box-shadow: 0 4px 12px rgba(49,130,246,0.12); transform: translateY(-1px); }
+  .dept-card.has-agenda { border-left: 4px solid var(--blue500); }
+  .dept-name { font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--grey900); letter-spacing: -0.2px; }
+  .dept-status { font-size: 13px; color: var(--grey500); }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--blue500); margin-right: 4px; vertical-align: middle; }
+  .agora-card { background: linear-gradient(135deg, var(--blue50) 0%, var(--blue100) 100%); border: 2px solid var(--blue200); border-radius: 12px; padding: 20px 28px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .agora-card:hover { border-color: var(--blue500); box-shadow: 0 2px 12px rgba(49,130,246,0.2); }
+  .agora-left .agora-title { font-size: 15px; font-weight: 700; color: var(--blue700); margin-bottom: 4px; letter-spacing: -0.3px; }
+  .agora-left .agora-sub { font-size: 12px; color: #4ade80; font-weight: 600; }
+  .agora-left .agora-desc { font-size: 12px; color: #888; margin-top: 6px; }
+  .agora-icon { font-size: 32px; opacity: 0.6; }
+
+  .loading { text-align: center; padding: 60px 0; color: #888; font-size: 14px; }
+  .spinner { width: 28px; height: 28px; border: 3px solid var(--grey200); border-top-color: var(--blue500); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .board-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .board-header h2 { font-size: 15px; font-weight: 700; }
+  .print-btn { background: #f5f5f5; border: 1px solid #e5e5e5; padding: 6px 13px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .board-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--grey200); margin-bottom: 20px; }
+  .board-table th { text-align: left; padding: 12px 16px; background: var(--grey50); color: var(--grey600); font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--grey200); }
+  .board-table td { padding: 12px 16px; border-bottom: 1px solid var(--grey100); vertical-align: top; font-size: 15px; }
+  .board-table tr:last-child td { border-bottom: none; }
+  .dept-label { font-weight: 600; white-space: nowrap; color: #1a1a1a; min-width: 110px; }
+  .dept-label.vip { color: #6b21a8; }
+  .agenda-item { padding: 3px 0; color: #333; line-height: 1.6; }
+  .agenda-item::before { content: '∙ '; color: #aaa; }
+  .agenda-item.vip::before { color: #a855f7; }
+  .date-chip { display: inline-block; background: #e8f0fe; color: #1a56db; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px; margin-right: 5px; vertical-align: middle; }
+  .date-chip.vip { background: #f3e8ff; color: #6b21a8; }
+  .discuss-section { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  .discuss-section-title { padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #e5e5e5; font-size: 14px; font-weight: 700; }
+  .discuss-row { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; }
+  .discuss-row:last-child { border-bottom: none; }
+  .discuss-num { font-size: 13px; font-weight: 700; color: #888; min-width: 24px; padding-top: 2px; }
+  .discuss-dept { font-size: 12px; font-weight: 700; color: #1a56db; margin-bottom: 3px; }
+  .discuss-dept.vip { color: #6b21a8; }
+  .discuss-text { font-size: 14px; color: #333; line-height: 1.6; white-space: pre-wrap; }
+  .agora-board-section { background: var(--blue50); border: 2px solid var(--blue200); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  .agora-board-title { padding: 12px 16px; background: var(--blue100); border-bottom: 1px solid var(--blue200); font-size: 14px; font-weight: 700; color: var(--blue700); }
+  .agora-board-item { padding: 10px 16px; border-bottom: 1px solid var(--blue100); display: flex; gap: 12px; align-items: flex-start; }
+  .agora-board-item:last-child { border-bottom: none; }
+  .agora-board-num { font-size: 13px; font-weight: 700; color: var(--blue400); min-width: 24px; padding-top: 2px; }
+  .agora-board-text { font-size: 14px; color: var(--grey800); line-height: 1.6; white-space: pre-wrap; flex: 1; }
+  .agora-like-btn { display: flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #fca5a5; border-radius: 20px; padding: 3px 10px; cursor: pointer; font-size: 13px; color: #ef4444; font-weight: 700; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+  .agora-like-btn:hover { background: #fff5f5; }
+  .agora-like-btn.liked { background: #fff5f5; border-color: #ef4444; }
+  .agora-like-btn .heart { font-size: 14px; }
+  /* 아고라 탭 카드 */
+  .agora-nav-card { background: var(--surface); border: 1px solid var(--blue200); border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; }
+  .agora-nav-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .agora-nav-date { font-size: 12px; color: var(--grey400); white-space: nowrap; background: var(--grey100); padding: 3px 8px; border-radius: 8px; }
+  .agora-nav-text { font-size: 15px; color: var(--grey800); line-height: 1.6; white-space: pre-wrap; margin-bottom: 12px; }
+  .agora-nav-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  /* 댓글 영역 */
+  .agora-comment { background: var(--blue50); border-left: 3px solid var(--blue300); border-radius: 0 8px 8px 0; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: var(--grey700); line-height: 1.6; }
+  .agora-comment-meta { font-size: 11px; color: var(--grey400); margin-bottom: 4px; }
+  .agora-comment-edit-btn { font-size: 12px; color: var(--blue500); background: none; border: 1px solid var(--blue200); border-radius: 6px; padding: 2px 8px; cursor: pointer; margin-left: 8px; }
+  .agora-comment-area { width: 100%; border: 1.5px solid var(--blue200); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; min-height: 56px; resize: none; outline: none; margin-top: 8px; }
+  .agora-comment-area:focus { border-color: var(--blue500); }
+  .agora-comment-save-btn { background: var(--blue500); color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+  .cal-wrap { overflow-x: auto; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); border: 1px solid #e5e5e5; border-radius: 14px; overflow: hidden; background: #fff; min-width: 700px; }
+  .cal-head { background: #f8f9fa; padding: 10px 8px; text-align: center; border-bottom: 1px solid #e5e5e5; border-right: 1px solid #f0f0f0; }
+  .cal-head:last-child { border-right: none; }
+  .cal-day-name { font-size: 12px; font-weight: 700; color: #555; }
+  .cal-day-name.sun { color: #e53e3e; } .cal-day-name.sat { color: #1a56db; }
+  .cal-date-num { font-size: 18px; font-weight: 700; margin-top: 2px; color: #1a1a1a; }
+  .cal-date-num.today { background: #1a56db; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 2px auto 0; font-size: 15px; }
+  .cal-date-num.sun { color: #e53e3e; } .cal-date-num.sat { color: #1a56db; }
+  .cal-cell { padding: 8px 6px; border-right: 1px solid #f0f0f0; min-height: 110px; }
+  .cal-cell:last-child { border-right: none; }
+  .cal-event { border-left: 3px solid #1a56db; background: #e8f0fe; border-radius: 4px; padding: 4px 6px; margin-bottom: 4px; font-size: 11px; line-height: 1.4; }
+  .cal-event.vip { border-left-color: #7c3aed; background: #f3e8ff; }
+  .cal-event .ev-dept { font-weight: 700; color: #1a56db; display: block; }
+  .cal-event.vip .ev-dept { color: #6b21a8; }
+  .cal-event .ev-text { color: #333; display: block; word-break: break-all; }
+  .cal-empty { color: #ddd; font-size: 12px; text-align: center; padding-top: 20px; }
+  .empty { text-align: center; padding: 50px 0; color: #aaa; font-size: 14px; }
+
+  /* ── 협의록 ── */
+  .minutes-wrap { display: flex; flex-direction: column; gap: 16px; }
+  .minutes-toolbar { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .minutes-toolbar-left h3 { font-size: 15px; font-weight: 700; }
+  .minutes-toolbar-left p { font-size: 12px; color: #888; margin-top: 3px; }
+  .minutes-toolbar-right { display: flex; align-items: center; gap: 8px; }
+  .min-saved-msg { font-size: 12px; color: #16a34a; display: none; }
+  .min-btn { display: flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600; border: none; }
+  .min-btn.save  { background: #1a56db; color: #fff; }
+  .min-btn.save:hover  { background: #1648c0; }
+  .min-btn.share { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+  .min-btn.share:hover { background: #dcfce7; }
+
+  /* 협의록 섹션 카드 */
+  .min-card { background: var(--surface); border: 1px solid var(--grey200); border-radius: 16px; overflow: hidden; }
+  .min-card-head { padding: 14px 18px; background: var(--grey50); border-bottom: 1px solid var(--grey200); display: flex; align-items: center; justify-content: space-between; }
+  .min-card-title { font-size: 15px; font-weight: 700; color: var(--grey800); }
+  .min-card-sub { font-size: 12px; color: #aaa; }
+
+  /* 캘린더 안건 행 (삭제 가능) */
+  .min-agenda-row { display: flex; align-items: flex-start; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; }
+  .min-agenda-row:last-child { border-bottom: none; }
+  .min-agenda-row.removed { display: none; }
+  .min-agenda-date { font-size: 11px; font-weight: 700; background: #e8f0fe; color: #1a56db; padding: 2px 7px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+  .min-agenda-date.nodate { background: #f0f0f0; color: #aaa; }
+  .min-agenda-dept { font-size: 11px; font-weight: 700; color: #555; white-space: nowrap; flex-shrink: 0; margin-top: 2px; min-width: 60px; }
+  .min-agenda-text { font-size: 13px; color: #333; flex: 1; line-height: 1.5; }
+  .min-del-btn { background: none; border: none; color: #ddd; font-size: 16px; cursor: pointer; flex-shrink: 0; padding: 0 2px; }
+  .min-del-btn:hover { color: #e53e3e; }
+
+  /* 건의+아고라 좌우 분할 */
+  /* 건논아 테이블 */
+  .disc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .disc-table th { padding: 8px 12px; background: #f8f9fa; font-weight: 700; color: #555; border-bottom: 2px solid #e5e5e5; text-align: left; white-space: nowrap; }
+  .disc-table th:not(:last-child) { border-right: 1px solid #e5e5e5; }
+  .disc-table td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .disc-table td:not(:last-child) { border-right: 1px solid #f0f0f0; }
+  .disc-table tr:last-child td { border-bottom: none; }
+  .disc-num { text-align: center; color: #aaa; font-weight: 700; font-size: 12px; width: 28px; white-space: nowrap; }
+  .disc-content { width: 38%; }
+  .disc-dept-tag { font-size: 11px; font-weight: 700; color: #1a56db; margin-bottom: 2px; }
+  .disc-dept-tag.vip { color: #6b21a8; }
+  .disc-dept-tag.agora { color: #16a34a; }
+  .disc-text { font-size: 13px; color: #333; line-height: 1.5; white-space: pre-wrap; }
+  .disc-result { width: 38%; }
+  .disc-result textarea { width: 100%; border: 1px solid #e5e5e5; border-radius: 6px; padding: 6px 8px; font-size: 13px; font-family: inherit; resize: none; min-height: 44px; outline: none; background: #fafff8; line-height: 1.5; display: block; }
+  .disc-result textarea:focus { border-color: #4ade80; box-shadow: 0 0 0 2px rgba(74,222,128,0.15); }
+  .disc-result textarea:disabled { background: #f9f9f9; color: #444; border-color: #f0f0f0; cursor: default; }
+  .disc-actions { white-space: nowrap; width: 70px; text-align: center; }
+  .disc-save-btn { font-size: 11px; font-weight: 600; border-radius: 6px; cursor: pointer; padding: 4px 8px; width: 100%; margin-bottom: 4px; display: block; background: #1a56db; color: #fff; border: none; }
+  .disc-save-btn:hover { background: #1648c0; }
+  .disc-save-btn.saved { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+  .disc-save-btn.saved:hover { background: #dcfce7; }
+  .disc-del-btn { font-size: 11px; font-weight: 600; border-radius: 6px; cursor: pointer; padding: 4px 8px; width: 100%; display: block; background: #fff5f5; color: #ef4444; border: 1px solid #fca5a5; }
+  .disc-del-btn:hover { background: #fef2f2; }
+  .min-empty { padding: 16px; font-size: 13px; color: #aaa; text-align: center; }
+  /* 더 이상 사용 안 함 - 하위 호환 */
+  .min-discuss-dept-tag { font-size: 11px; font-weight: 700; color: #1a56db; }
+  .min-discuss-dept-tag.vip { color: #6b21a8; }
+
+  /* 모달 */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 20px; width: min(580px, 95vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 16px 40px rgba(25,31,40,0.18); }
+  .modal-head { padding: 20px 20px 14px; border-bottom: 1px solid var(--grey100); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .modal-head h2 { font-size: 17px; font-weight: 700; color: var(--grey900); letter-spacing: -0.3px; }
+  .close-btn { background: var(--grey100); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--grey600); }
+  .modal-body { padding: 18px; }
+  .section-label { font-size: 11px; font-weight: 700; color: #aaa; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .section-divider { border: none; border-top: 2px dashed #e5e5e5; margin: 20px 0; }
+  .item-list, .discuss-list { margin-bottom: 14px; min-height: 10px; }
+  .item-row { background: #f8f9fa; border-radius: 8px; padding: 9px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
+  .item-num { font-size: 12px; color: #aaa; min-width: 18px; padding-top: 2px; }
+  .item-content { flex: 1; }
+  .item-text { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  .item-date-row { display: flex; align-items: center; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+  .item-date-chip { display: inline-block; background: #e8f0fe; color: #1a56db; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .item-date-chip.none { background: #f0f0f0; color: #aaa; }
+  .edit-date-btn { font-size: 11px; color: #1a56db; background: none; border: 1px solid #c7d9f5; border-radius: 8px; padding: 2px 8px; cursor: pointer; }
+  .date-edit-area { margin-top: 6px; display: none; flex-wrap: wrap; gap: 5px; }
+  .date-edit-area.open { display: flex; }
+  .de-btn { padding: 4px 10px; border: 1px solid #e5e5e5; border-radius: 16px; font-size: 12px; cursor: pointer; background: #fff; color: #555; }
+  .de-btn.selected { background: #1a56db; color: #fff; border-color: #1a56db; }
+  .de-btn.no-date { background: #f8f9fa; color: #aaa; }
+  .del-btn { background: none; border: none; cursor: pointer; color: #ddd; font-size: 18px; padding: 0; line-height: 1; flex-shrink: 0; }
+  .del-btn:hover { color: #e53e3e; }
+  .date-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .date-btn { padding: 6px 12px; border: 1px solid #e5e5e5; border-radius: 20px; font-size: 13px; cursor: pointer; background: #fff; color: #555; }
+  .date-btn.selected { background: #1a56db; color: #fff; border-color: #1a56db; }
+  .date-btn.no-date { background: #f8f9fa; color: #aaa; }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 4px; }
+  .input-row textarea { flex: 1; padding: 10px 13px; border: 1px solid #e5e5e5; border-radius: 8px; font-size: 14px; min-height: 60px; resize: vertical; font-family: inherit; }
+  .input-row textarea:focus { outline: none; border-color: #1a56db; }
+  .btn-add { background: var(--blue500); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .btn-add.amber { background: var(--orange500); } .btn-add.amber:hover { background: var(--orange700); }
+  .btn-add.green { background: var(--green500); } .btn-add.green:hover { background: var(--green400); }
+  .discuss-item-row { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 9px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
+  .discuss-item-text { flex: 1; font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #333; }
+  .agora-modal-body { padding: 18px; background: var(--blue50); }
+  .agora-item-row { background: #fff; border: 1px solid var(--blue200); border-radius: 8px; padding: 9px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
+  .agora-item-num { font-size: 12px; color: var(--blue400); min-width: 18px; font-weight: 700; }
+  .agora-item-text { flex: 1; font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: var(--blue800, #1e3a5f); }
+  .agora-input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .agora-input-row textarea { flex: 1; padding: 10px 13px; border: 1px solid var(--blue200); border-radius: 8px; font-size: 14px; min-height: 60px; resize: vertical; font-family: inherit; background: #fff; }
+  .modal-foot { padding: 12px 18px 18px; display: flex; justify-content: flex-end; }
+  .btn-secondary { background: var(--grey100); border: 1px solid var(--grey200); padding: 10px 20px; border-radius: 10px; font-size: 15px; cursor: pointer; font-weight: 600; color: var(--grey700); }
+
+  /* ── 시설관리 탭 강조 ── */
+  .tab-facility { background: var(--yellow50); color: var(--orange700) !important; border: 1.5px solid var(--yellow500); border-bottom: 2px solid transparent; border-radius: 8px 8px 0 0; font-weight: 700 !important; margin-left: 8px; }
+  .tab-facility.active { background: #fff3cd; color: var(--orange700) !important; border-bottom-color: var(--orange700) !important; }
+  .tab-agora-nav { background: var(--blue50); color: var(--blue600) !important; border: 1.5px solid var(--blue200); border-bottom: 2px solid transparent; border-radius: 8px 8px 0 0; font-weight: 700 !important; margin-left: 8px; }
+  .tab-agora-nav.active { background: var(--blue100); color: var(--blue700) !important; border-bottom-color: var(--blue600) !important; }
+  /* 서브탭 */
+  .ftab { padding: 8px 18px; border-radius: 20px; border: 1.5px solid var(--grey200); background: var(--surface); color: var(--grey600); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .ftab.ftab-on { background: var(--blue500); color: #fff; border-color: var(--blue500); }
+  .ftab.ftab-new { background: var(--green50); color: var(--green500); border-color: #86efac; }
+  /* 시설 카드 */
+  .facility-card { background: var(--surface); border: 1px solid var(--grey200); border-radius: 16px; padding: 18px; margin-bottom: 12px; }
+  .facility-card.urgent { border-left: 4px solid var(--red500); }
+  .facility-card.normal { border-left: 4px solid var(--blue500); }
+  .facility-card.done-card { opacity: 0.6; }
+  /* 상단 배너 영역 */
+  .facility-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .urgency-tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 10px; }
+  .urgency-tag.urgent { background: var(--red50); color: var(--red500); }
+  .urgency-tag.normal { background: var(--blue50); color: var(--blue500); }
+  .flow-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 10px; }
+  .flow-tag.waiting  { background: var(--grey100); color: var(--grey600); }
+  .flow-tag.progress { background: var(--yellow50); color: var(--orange700); }
+  .flow-tag.done     { background: var(--green50); color: var(--green500); }
+  .flow-arrow { color: var(--grey400); font-size: 11px; }
+  .facility-place { font-size: 14px; font-weight: 700; color: var(--grey900); margin-bottom: 6px; }
+  .facility-content { font-size: 15px; color: var(--grey700); line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; }
+  .facility-meta { font-size: 13px; color: var(--grey500); margin-bottom: 12px; }
+  /* 액션 영역 */
+  .facility-action { background: var(--grey50); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .facility-action-hint { font-size: 12px; color: var(--grey500); }
+  .facility-action-btn { padding: 7px 16px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .facility-action-btn.btn-progress { background: var(--yellow50); color: var(--orange700); border: 1.5px solid var(--yellow500); }
+  .facility-action-btn.btn-done { background: var(--green50); color: var(--green500); border: 1.5px solid #86efac; }
+  /* 날짜 박스 */
+  .facility-date-box { background: var(--grey800); color: #fff; border-radius: 8px; padding: 5px 10px; text-align: center; white-space: nowrap; }
+  .facility-date-box .date-line { font-size: 13px; font-weight: 700; letter-spacing: 0.3px; }
+  .facility-date-box .time-line { font-size: 15px; font-weight: 700; margin-top: 1px; }
+  /* 수정/삭제 아이콘 버튼 */
+  .facility-icon-btns { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .facility-icon-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 3px 5px; border-radius: 6px; line-height: 1; }
+  .facility-icon-btn:hover { background: var(--grey100); }
+  .facility-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  /* 신청 폼 */
+  .facility-form { background: var(--surface); border: 1px solid var(--grey200); border-radius: 16px; padding: 22px; max-width: 560px; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 14px; font-weight: 700; color: var(--grey800); margin-bottom: 8px; }
+  .form-input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--grey300); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; color: var(--grey900); }
+  .form-input:focus { border-color: var(--blue500); box-shadow: 0 0 0 3px rgba(49,130,246,0.1); }
+  .form-textarea { width: 100%; padding: 12px 16px; border: 1.5px solid var(--grey300); border-radius: 10px; font-size: 15px; font-family: inherit; min-height: 80px; resize: vertical; outline: none; color: var(--grey900); }
+  .form-textarea:focus { border-color: var(--blue500); box-shadow: 0 0 0 3px rgba(49,130,246,0.1); }
+  .urgency-btn { padding: 9px 22px; border-radius: 10px; border: 2px solid var(--grey200); background: var(--grey50); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--grey700); }
+  .active-urgency.urgency-normal { border-color: var(--blue500); background: var(--blue50); color: var(--blue500); }
+  .active-urgency.urgency-urgent { border-color: var(--red500); background: var(--red50); color: var(--red500); }
+  .version-bar { text-align: center; padding: 24px 0 16px; font-size: 12px; color: #ccc; }
+  .version-bar span { background: #f0f0f0; color: #aaa; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+  @media print { .tabs,.dept-grid,.overlay,.header p,.print-btn,.week-selector,.version-bar { display: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:stretch;gap:14px;flex-wrap:wrap">
+    <div>
+      <h1>🏫 창현고 업무 소통방</h1>
+      <p>안건 공유 · 건의 · 토론 · 시설관리를 함께하는 공간입니다</p>
+    </div>
+    <div class="week-selector">
+      <button class="week-badge" id="weekBadge" onclick="toggleWeekDropdown()">
+        <span id="weekLabel">로딩중...</span> ▾
+      </button>
+      <div class="week-dropdown" id="weekDropdown"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" id="tab-input"    onclick="switchTab('input')">✏️ 안건 입력하기</button>
+  <button class="tab"        id="tab-board"    onclick="switchTab('board')">📋 부서별 안건 보기</button>
+  <button class="tab"        id="tab-daily"    onclick="switchTab('daily')">📅 주간 업무 캘린더</button>
+  <button class="tab tab-agora-nav" id="tab-agora-nav" onclick="switchTab('agora-nav')">🗣️ 아고라</button>
+  <button class="tab tab-facility" id="tab-facility" onclick="switchTab('facility')">🔨 시설 관리</button>
+</div>
+
+<div class="main">
+  <div id="section-input">
+    <div class="board-header">
+      <div><h2>부서별 안건 입력</h2><p style="font-size:13px;color:#888;margin-top:3px">입력 완료: <strong id="deptCount" style="color:#3182f6">0</strong> / 20개 부서</p></div>
+    </div>
+    <div id="deptGrid" class="dept-grid"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+    <div id="agoraContainer" style="margin-top:10px"></div>
+  </div>
+
+  <div id="section-board" style="display:none">
+    <div class="board-header"><div><h2>부서별 안건 보기</h2></div><button class="print-btn" onclick="window.print()">🖨️ 인쇄</button></div>
+    <div id="boardContent"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+
+  <div id="section-daily" style="display:none">
+    <div class="board-header"><div><h2>주간 업무 캘린더</h2></div><button class="print-btn" onclick="window.print()">🖨️ 인쇄</button></div>
+    <div id="dailyContent"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+
+  <div id="section-minutes" style="display:none">
+    <div class="minutes-wrap">
+      <!-- 툴바 -->
+      <div class="minutes-toolbar">
+        <div class="minutes-toolbar-left">
+          <h3>📝 <span id="minutesWeekLabel"></span> 협의록</h3>
+          <p>회의 결과를 입력하세요.</p>
+        </div>
+        <div class="minutes-toolbar-right">
+          <span class="min-saved-msg" id="minSavedMsg">✓ 저장됨</span>
+          <button class="min-btn save" onclick="saveMinutes()">💾 저장</button>
+          <button class="min-btn share" onclick="shareMinutes()">📤 공유</button>
+        </div>
+      </div>
+
+      <!-- 섹션1: 주간 캘린더 안건 -->
+      <div class="min-card" id="minCalCard">
+        <div class="min-card-head">
+          <span class="min-card-title">📅 주간 업무 캘린더 안건</span>
+          <span class="min-card-sub">항목을 삭제하여 협의록에서 제외할 수 있어요</span>
+        </div>
+        <div id="minCalList"><div class="min-empty">안건을 불러오는 중...</div></div>
+      </div>
+
+      <!-- 섹션2: 날짜 미지정 안건 -->
+      <div class="min-card" id="minNodateCard">
+        <div class="min-card-head">
+          <span class="min-card-title">📌 날짜 미지정 안건</span>
+          <span class="min-card-sub">항목을 삭제하여 협의록에서 제외할 수 있어요</span>
+        </div>
+        <div id="minNodateList"><div class="min-empty">불러오는 중...</div></div>
+      </div>
+
+      <!-- 섹션3: 건의+아고라 좌우 -->
+      <div class="min-card">
+        <div class="min-card-head">
+          <span class="min-card-title">💬 건의·논의사항 &amp; 아고라</span>
+          <span class="min-card-sub">왼쪽: 안건 내용 / 오른쪽: 협의 결과 입력</span>
+        </div>
+        <div id="minDiscussWrap">
+          <div class="min-empty">불러오는 중...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 모달 -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle"></h2>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+  <!-- 아고라 탭 -->
+  <div id="section-agora-nav" style="display:none">
+    <div class="board-header">
+      <div><h2>🗣️ 아고라 — 자유제안 및 토론의 광장</h2>
+      <p style="font-size:13px;color:var(--grey500);margin-top:3px">모든 교직원이 자유롭게 제안하고 토론하는 공간입니다</p></div>
+    </div>
+    <div id="agoraNavList"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+  </div>
+
+  <!-- 시설 관리 -->
+  <div id="section-facility" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button id="ftab-active" class="ftab ftab-on" onclick="switchFtab('active')">🔧 시설 현황</button>
+      <button id="ftab-new"    class="ftab ftab-new"  onclick="switchFtab('new')">+ 새 신청</button>
+    </div>
+    <!-- 진행 현황 -->
+    <div id="fsection-active">
+      <div id="facilityList"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+    </div>
+    <!-- 새 신청 -->
+    <div id="fsection-new" style="display:none">
+      <div class="facility-form">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">🔨 시설 수리·교체 신청</h3>
+        <div class="form-group">
+          <label class="form-label">신청자 이름</label>
+          <input type="text" id="fName" placeholder="이름을 입력하세요" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">장소</label>
+          <input type="text" id="fPlace" placeholder="예) 3층 남자화장실, 1학년 2반 교실" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">내용</label>
+          <textarea id="fContent" placeholder="수리·교체가 필요한 내용을 상세히 적어주세요" class="form-textarea"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">긴급도</label>
+          <div style="display:flex;gap:8px">
+            <button id="fUrgNormal" class="urgency-btn urgency-normal active-urgency" onclick="window.setUrgency('normal')">📌 일반</button>
+            <button id="fUrgUrgent" class="urgency-btn urgency-urgent" onclick="window.setUrgency('urgent')">🚨 긴급</button>
+          </div>
+        </div>
+        <button onclick="window.submitFacility()" style="width:100%;padding:12px;background:#3182f6;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px">신청하기</button>
+      </div>
+    </div>
+  </div>
+
+<div class="version-bar"><span>🛠 v22 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp({ databaseURL: "https://changhyun-meeting-default-rtdb.asia-southeast1.firebasedatabase.app" });
+const db  = getDatabase(app);
+
+const DEPTS = [
+  { id:'notice',     name:'주요 전달사항', vip:true },
+  { id:'principal',  name:'교장·교감',     vip:true },
+  { id:'edu_plan',   name:'교무기획부' },
+  { id:'curriculum', name:'교육과정부' },
+  { id:'research',   name:'교육연구부' },
+  { id:'student',    name:'학생생활부' },
+  { id:'activities', name:'창체활동부' },
+  { id:'fusion',     name:'교과융합부' },
+  { id:'career',     name:'진로진학부' },
+  { id:'it',         name:'교육정보부' },
+  { id:'chaplain',   name:'교목실' },
+  { id:'welfare',    name:'인성복지부' },
+  { id:'grade1',     name:'1학년부' },
+  { id:'grade2',     name:'2학년부' },
+  { id:'grade3',     name:'3학년부' },
+  { id:'admin',      name:'행정실' },
+  { id:'health',     name:'보건실' },
+  { id:'weeclass',   name:'위클래스' },
+  { id:'cafeteria',  name:'급식실' },
+  { id:'library',    name:'도서관' }
+];
+const AGORA_ID = 'agora';
+const DAY_KO = ['일','월','화','수','목','금','토'];
+
+function getWeekOptions() {
+  const today = new Date();
+  // 과거4주(-4~-2) + 지난주(-1) + 이번주(0) + 앞으로4주(+1~+4) = 총 10개
+  return Array.from({length:10}, (_,i) => {
+    const offset = i - 4;
+    const d = new Date(today); d.setDate(today.getDate()+offset*7);
+    const sun = new Date(d); sun.setDate(d.getDate()-d.getDay());
+    const mon = new Date(sun); mon.setDate(sun.getDate()+1);
+    const wed = new Date(sun); wed.setDate(sun.getDate()+3);
+    const m  = wed.getMonth()+1;
+    const wn = Math.ceil(wed.getDate()/7);
+    const yr = wed.getFullYear();
+    return {
+      key: `week_${yr}_${String(m).padStart(2,'0')}_w${wn}`,
+      label: `${m}월 ${wn}주차`,
+      sun, mon,
+      isCurrent: offset===0,
+      isPast:    offset===-1
+    };
+  });
+}
+function getCalDays(sun) {
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(sun); d.setDate(sun.getDate()+i);
+    const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return { date:d, dayIdx:i, label:`${d.getMonth()+1}/${d.getDate()}(${DAY_KO[i]})`, dateKey:dk };
+  });
+}
+function getAgendaItems(id){ const d=allData[id]; if(!d) return []; return Object.entries(d).filter(([k])=>k!=='discusses'); }
+function getDiscussItems(id){ const d=allData[id]?.discusses; if(!d) return []; return Object.entries(d); }
+let agoraData = {};
+function getAgoraItems(){ if(!agoraData) return []; return Object.entries(agoraData); }
+function isVip(id){ return id==='notice'||id==='principal'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function escRaw(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let weekOptions  = getWeekOptions();
+let selectedWeek = weekOptions[4]; // index 4 = 이번 주
+let allData = {}, currentDept = null, unsub = null, unsubDuty = null, selectedDate = null;
+let dutyData = {}; // 감독조: allData와 분리 (agendas 구독이 allData를 통째로 덮어써서 지워지는 문제 방지)
+// 협의록 상태: 삭제된 항목 키 set, 결과 입력값
+let minRemovedCal    = new Set();
+let minRemovedNodate = new Set();
+let minRemovedDisc   = new Set();
+let minLockedDisc    = new Set(); // 저장(잠금) 상태
+let minResults       = {}; // key → textarea value
+
+/* ── 주차 ── */
+function renderWeekDropdown(){
+  document.getElementById('weekDropdown').innerHTML = weekOptions.map(w=>
+    `<div class="week-opt ${w.key===selectedWeek.key?'active':''}" onclick="window.selectWeek('${w.key}')">
+      ${w.label}
+      ${w.isCurrent?'<span class="cur-tag">이번 주</span>':''}
+      ${w.isPast?'<span class="past-tag">지난 주</span>':''}
+    </div>`).join('');
+}
+window.toggleWeekDropdown = () => { document.getElementById('weekDropdown').classList.toggle('open'); renderWeekDropdown(); };
+document.addEventListener('click', e => { if(!e.target.closest('.week-selector')) document.getElementById('weekDropdown').classList.remove('open'); });
+window.selectWeek = key => {
+  selectedWeek = weekOptions.find(w=>w.key===key);
+  document.getElementById('weekLabel').textContent = selectedWeek.label;
+  const b = document.getElementById('weekBadge');
+  b.style.background = selectedWeek.isPast?'#fff3e0':'#e8f0fe';
+  b.style.color      = selectedWeek.isPast?'#e65100':'#1a56db';
+  document.getElementById('weekDropdown').classList.remove('open');
+  subscribeData();
+};
+document.getElementById('weekLabel').textContent = selectedWeek.label;
+
+/* ── Firebase ── */
+/* ── 브라우저 고유 ID (localStorage) ── */
+if(!localStorage.getItem('_changhyun_uid')){
+  localStorage.setItem('_changhyun_uid', 'u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
+}
+window._myId = localStorage.getItem('_changhyun_uid');
+
+/* ── 좋아요 토글 ── */
+window.toggleLike = function(agoraKey){
+  const likeRef = ref(db, `agora/${agoraKey}/likes/${window._myId}`);
+  const item = agoraData?.[agoraKey];
+  if(item?.likes?.[window._myId]){
+    remove(likeRef);
+  } else {
+    set(likeRef, true);
+  }
+};
+
+function subscribeData(){
+  if(unsub) unsub();
+  if(unsubDuty) unsubDuty();
+  dutyData = {}; // 주차 변경 시 이전 주 감독조가 남지 않도록 초기화
+  unsub = onValue(ref(db,`agendas/${selectedWeek.key}`), snap => {
+    allData = snap.val()||{};
+    renderAll();
+    if(document.getElementById('overlay').classList.contains('open')){
+      if(currentDept){ refreshItemList(); refreshDiscussList(); }
+      else refreshAgoraList();
+    }
+    if(document.getElementById('section-agora-nav') && document.getElementById('section-agora-nav').style.display !== 'none') renderAgoraNav();
+  });
+  // 감독조 Firebase 구독 (주차별, 해제 가능하게)
+  unsubDuty = onValue(ref(db, `duty_roster/${selectedWeek.key}`), snap => {
+    dutyData = snap.val() || {};
+    renderDutyRoster();
+  });
+}
+// 아고라 최상위 경로 구독 (주차 무관, 앱 시작 시 한 번)
+onValue(ref(db, 'agora'), snap => {
+  agoraData = snap.val() || {};
+  renderAll();
+  if(document.getElementById('overlay').classList.contains('open') && !currentDept) refreshAgoraList();
+  if(document.getElementById('section-agora-nav') && document.getElementById('section-agora-nav').style.display !== 'none') renderAgoraNav();
+});
+subscribeData();
+
+function renderAll(){ renderDeptGrid(); renderBoard(); renderCalendar(); }
+
+/* ── 부서 그리드 ── */
+function renderDeptGrid(){
+  const filled = DEPTS.filter(d=>getAgendaItems(d.id).length>0||getDiscussItems(d.id).length>0).length + (getAgoraItems().length>0?1:0);
+  document.getElementById('deptCount').textContent = filled;
+  // 부서 카드: 비밀번호 자물쇠 아이콘 표시
+  const cards = DEPTS.map(d=>{
+    const ac=getAgendaItems(d.id).length, dc=getDiscussItems(d.id).length;
+    return `<div class="dept-card ${ac+dc>0?'has-agenda':''}" onclick="window.openDept('${d.id}')">
+      <div class="dept-name">${d.name}</div>
+      <div class="dept-status">${ac+dc>0?`<span class="dot"></span>안건 ${ac} / 건의 ${dc}`:'입력 없음'}</div>
+    </div>`;
+  }).join('');
+  // 아고라: 항상 맨 아래, 전체 너비
+  const ac2 = getAgoraItems().length;
+  // 우측 영역: 발제 있을 때만 그리스시민+발제수 표시
+  const agoraRight = ac2 > 0
+    ? `<div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:21px;color:var(--blue600);font-weight:700;white-space:nowrap;text-align:right">아고라 발제<br>${ac2}건</div>
+        <div style="font-size:56px;line-height:1;opacity:0.8">🏛️</div>
+      </div>`
+    : `<div style="font-size:56px;opacity:0.75;line-height:1">🏛️</div>`;
+
+  const agora = `<div class="agora-card ${ac2>0?'has-agenda':''}" onclick="window.openAgora()">
+    <div class="agora-left">
+      <div class="agora-title" style="font-size:28px;margin-bottom:4px;letter-spacing:-0.5px">🗣️ 아고라</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:14px;color:var(--blue700);font-weight:700">자유제안 및 토론의 광장</span>
+        <span style="font-size:11px;font-weight:700;background:var(--blue500);color:#fff;padding:2px 8px;border-radius:10px">모든 교직원 이용가능</span>
+      </div>
+    </div>
+    ${agoraRight}
+  </div>`;
+  // 아고라를 항상 맨 아래에 오도록 별도 컨테이너에 배치
+  document.getElementById('deptGrid').innerHTML = cards;
+  document.getElementById('agoraContainer').innerHTML = agora;
+}
+
+
+
+/* ── 전체 안건 보기 ── */
+function renderBoard(){
+  const el = document.getElementById('boardContent');
+  const hasSome = DEPTS.some(d=>getAgendaItems(d.id).length>0||getDiscussItems(d.id).length>0)||getAgoraItems().length>0;
+  if(!hasSome){ el.innerHTML=`<div class="empty">📭 아직 입력된 내용이 없습니다</div>`; return; }
+  let html=`<table class="board-table"><thead><tr><th style="width:120px">부서</th><th>안건</th></tr></thead><tbody>`;
+  let hasAny=false;
+  DEPTS.forEach(d=>{
+    const items=getAgendaItems(d.id); if(!items.length) return; hasAny=true;
+    const v=isVip(d.id);
+    html+=`<tr><td class="dept-label ${v?'vip':''}">${d.name}</td><td>`;
+    items.forEach(([,it])=>{ html+=`<div class="agenda-item ${v?'vip':''}">${it.dateLabel?`<span class="date-chip ${v?'vip':''}">${it.dateLabel}</span>`:''} ${esc(it.text)}</div>`; });
+    html+=`</td></tr>`;
+  });
+  if(!hasAny) html+=`<tr><td colspan="2" style="text-align:center;color:#aaa;padding:16px">안건 없음</td></tr>`;
+  html+=`</tbody></table>`;
+  let dh='',dn=1,hd=false;
+  DEPTS.forEach(d=>{ getDiscussItems(d.id).forEach(([,it])=>{ hd=true; const v=isVip(d.id); dh+=`<div class="discuss-row"><div class="discuss-num">${dn++}</div><div><div class="discuss-dept ${v?'vip':''}">${d.name}</div><div class="discuss-text">${esc(it.text)}</div></div></div>`; }); });
+  if(hd) html+=`<div class="discuss-section"><div class="discuss-section-title">💬 건의 및 논의사항</div>${dh}</div>`;
+  el.innerHTML=html;
+}
+
+/* ── 주간 캘린더 ── */
+function renderCalendar(){
+  const el=document.getElementById('dailyContent');
+  const days=getCalDays(selectedWeek.sun);
+  const today=new Date();
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const byDate={}; days.forEach(d=>{byDate[d.dateKey]=[];});
+  DEPTS.forEach(dept=>{ getAgendaItems(dept.id).forEach(([,item])=>{ if(item.dateKey&&byDate[item.dateKey]!==undefined) byDate[item.dateKey].push({dept:dept.name,text:item.text,vip:isVip(dept.id)}); }); });
+  let html=`<div class="cal-wrap"><div class="cal-grid">`;
+  days.forEach(d=>{ const cls=d.dayIdx===0?'sun':d.dayIdx===6?'sat':'';
+    html+=`<div class="cal-head"><div class="cal-day-name ${cls}">${DAY_KO[d.dayIdx]}요일</div><div class="cal-date-num ${d.dateKey===todayStr?'today':cls}">${d.date.getDate()}</div></div>`; });
+  days.forEach(d=>{ const ev=byDate[d.dateKey]||[];
+    html+=`<div class="cal-cell">${ev.length?ev.map(e=>`<div class="cal-event ${e.vip?'vip':''}"><span class="ev-dept">${e.dept}</span><span class="ev-text">${esc(e.text)}</span></div>`).join(''):'<div class="cal-empty">-</div>'}</div>`; });
+  html+=`</div></div>`;
+  const noDate=[]; DEPTS.forEach(dept=>{ getAgendaItems(dept.id).forEach(([,item])=>{ if(!item.dateKey) noDate.push({dept:dept.name,text:item.text,vip:isVip(dept.id)}); }); });
+  if(noDate.length){ html+=`<div style="margin-top:20px"><div style="font-size:13px;font-weight:700;color:#888;margin-bottom:8px">📌 날짜 미지정 안건</div><table class="board-table"><thead><tr><th style="width:110px">부서</th><th>안건</th></tr></thead><tbody>`;
+    noDate.forEach(it=>html+=`<tr><td class="dept-label ${it.vip?'vip':''}">${it.dept}</td><td>${esc(it.text)}</td></tr>`); html+=`</tbody></table></div>`; }
+  let ch='',cn=1,hc=false; DEPTS.forEach(d=>{ getDiscussItems(d.id).forEach(([,it])=>{ hc=true; const v=isVip(d.id); ch+=`<div class="discuss-row"><div class="discuss-num">${cn++}</div><div><div class="discuss-dept ${v?'vip':''}">${d.name}</div><div class="discuss-text">${esc(it.text)}</div></div></div>`; }); });
+  if(hc) html+=`<div style="margin-top:20px"><div class="discuss-section"><div class="discuss-section-title">💬 건의 및 논의사항</div>${ch}</div></div>`;
+
+  // 감독조 명단 캘린더 하단에 추가
+  const dutyHtml = renderDutyRosterHtml();
+  if(dutyHtml) html += dutyHtml;
+
+  el.innerHTML=html;
+}
+
+function renderDutyRosterHtml(){
+  const days = getCalDays(selectedWeek.sun).slice(1,6); // 월~금
+  const dayNames = ['월','화','수','목','금'];
+  const hasDuty = days.some(d => dutyData[d.dateKey]);
+  if(!hasDuty) return '';
+  let html = `<div style="margin-top:20px;background:#fff;border:1.5px solid var(--blue100);border-radius:14px;overflow:hidden">
+    <div style="padding:12px 16px;background:var(--blue50);border-bottom:1px solid var(--blue100);font-size:14px;font-weight:700;color:var(--blue700)">🌙 야간 자기주도학습 감독조</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr)">`;
+  days.forEach((d,i) => {
+    const name = dutyData[d.dateKey] || '';
+    html += `<div style="padding:12px 8px;text-align:center;${i<4?'border-right:1px solid var(--blue50)':''}">
+      <div style="font-size:12px;font-weight:700;color:var(--blue500);margin-bottom:6px">${dayNames[i]}요일</div>
+      <div style="font-size:14px;color:${name?'var(--grey800)':'var(--grey300)'};font-weight:${name?'600':'400'}">${name||'미정'}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function renderDutyRoster(){
+  renderCalendar();
+}
+
+/* ══════════════════════════════════════
+   협의록
+══════════════════════════════════════ */
+function renderMinutes(){
+  document.getElementById('minutesWeekLabel').textContent = selectedWeek.label;
+  const days = getCalDays(selectedWeek.sun);
+  const byDate = {}; days.forEach(d=>{byDate[d.dateKey]=[];});
+  DEPTS.forEach(dept=>{ getAgendaItems(dept.id).forEach(([k,item])=>{
+    if(item.dateKey&&byDate[item.dateKey]!==undefined)
+      byDate[item.dateKey].push({key:`${dept.id}_${k}`,dept:dept.name,text:item.text,vip:isVip(dept.id),dateLabel:item.dateLabel});
+  });});
+
+  // 캘린더 안건
+  let calItems = [];
+  days.forEach(d=>{ byDate[d.dateKey].forEach(it=>calItems.push(it)); });
+  const calEl = document.getElementById('minCalList');
+  if(!calItems.length){ calEl.innerHTML='<div class="min-empty">날짜가 지정된 안건이 없습니다</div>'; }
+  else { calEl.innerHTML = calItems.map(it=>`
+    <div class="min-agenda-row ${minRemovedCal.has(it.key)?'removed':''}" id="mcal-${it.key}">
+      <span class="min-agenda-date">${it.dateLabel||''}</span>
+      <span class="min-agenda-dept">${it.dept}</span>
+      <span class="min-agenda-text">${escRaw(it.text)}</span>
+      <button class="min-del-btn" onclick="window.minRemoveCal('${it.key}')">✕</button>
+    </div>`).join(''); }
+
+  // 날짜 미지정
+  let nodateItems=[];
+  DEPTS.forEach(dept=>{ getAgendaItems(dept.id).forEach(([k,item])=>{ if(!item.dateKey) nodateItems.push({key:`${dept.id}_${k}`,dept:dept.name,text:item.text,vip:isVip(dept.id)}); }); });
+  const ndEl = document.getElementById('minNodateList');
+  if(!nodateItems.length){ ndEl.innerHTML='<div class="min-empty">날짜 미지정 안건이 없습니다</div>'; }
+  else { ndEl.innerHTML = nodateItems.map(it=>`
+    <div class="min-agenda-row ${minRemovedNodate.has(it.key)?'removed':''}" id="mnd-${it.key}">
+      <span class="min-agenda-date nodate">미지정</span>
+      <span class="min-agenda-dept">${it.dept}</span>
+      <span class="min-agenda-text">${escRaw(it.text)}</span>
+      <button class="min-del-btn" onclick="window.minRemoveNodate('${it.key}')">✕</button>
+    </div>`).join(''); }
+
+  // 건의+아고라 좌우
+  let discAll = [];
+  DEPTS.forEach(d=>{ getDiscussItems(d.id).forEach(([k,it])=>{ discAll.push({key:`disc_${d.id}_${k}`,dept:d.name,text:it.text,vip:isVip(d.id)}); }); });
+  getAgoraItems().forEach(([k,it])=>{ discAll.push({key:`agora_${k}`,dept:'아고라',text:it.text,vip:false,isAgora:true}); });
+  const dgEl = document.getElementById('minDiscussWrap');
+  const visible = discAll.filter(it=>!minRemovedDisc.has(it.key));
+  if(!visible.length){ dgEl.innerHTML='<div class="min-empty">건의사항 및 아고라 내용이 없습니다</div>'; return; }
+  let rows = visible.map((it,idx)=>{
+    const savedResult = minResults[it.key]||'';
+    const isLocked = minLockedDisc.has(it.key);
+    const deptCls = it.vip?'vip':it.isAgora?'agora':'';
+    return `<tr>
+      <td class="disc-num">${idx+1}</td>
+      <td class="disc-content">
+        <div class="disc-dept-tag ${deptCls}">${it.dept}</div>
+        <div class="disc-text">${escRaw(it.text)}</div>
+      </td>
+      <td class="disc-result">
+        <textarea id="mdr-${it.key}" placeholder="협의 결과를 입력하세요" ${isLocked?'disabled':''}
+          onchange="window.minSaveResult('${it.key}',this.value)"
+          onblur="window.minSaveResult('${it.key}',this.value)">${savedResult}</textarea>
+      </td>
+      <td class="disc-actions">
+        <button class="disc-save-btn ${isLocked?'saved':''}" id="mdbtn-${it.key}"
+          onclick="window.minToggleResult('${it.key}')">${isLocked?'✏️ 수정':'💾 저장'}</button>
+        <button class="disc-del-btn" onclick="window.minRemoveDisc('${it.key}')">✕ 삭제</button>
+      </td>
+    </tr>`;
+  }).join('');
+  dgEl.innerHTML = `<table class="disc-table">
+    <thead><tr>
+      <th style="width:28px">순</th>
+      <th>안건 내용</th>
+      <th>협의 결과</th>
+      <th style="width:70px;text-align:center">관리</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+window.minRemoveCal    = key => { minRemovedCal.add(key);    const el=document.getElementById(`mcal-${key}`); if(el) el.classList.add('removed'); };
+window.minRemoveNodate = key => { minRemovedNodate.add(key); const el=document.getElementById(`mnd-${key}`);  if(el) el.classList.add('removed'); };
+window.minRemoveDisc   = key => { minRemovedDisc.add(key);   renderMinutes(); };
+window.minSaveResult   = (key,val) => {
+  minResults[key]=val;
+  // 버튼 텍스트 실시간 업데이트
+  const btn = document.getElementById(`mdbtn-${key}`);
+  if(btn){ btn.textContent = val.trim() ? '✏️ 수정' : '+ 입력'; btn.className = `min-disc-btn ${val.trim()?'edit':'add'}`; }
+};
+
+/* 💾 저장 / ✏️ 수정 토글 */
+window.minToggleResult = key => {
+  const ta  = document.getElementById(`mdr-${key}`);
+  const btn = document.getElementById(`mdbtn-${key}`);
+  if(!ta||!btn) return;
+  const isLocked = minLockedDisc.has(key);
+  if(isLocked){
+    // 수정 모드로 전환
+    minLockedDisc.delete(key);
+    ta.disabled = false;
+    ta.focus();
+    btn.textContent = '💾 저장';
+    btn.className = 'disc-save-btn';
+  } else {
+    // 저장(잠금) 모드로 전환
+    minLockedDisc.add(key);
+    minResults[key] = ta.value;
+    ta.disabled = true;
+    btn.textContent = '✏️ 수정';
+    btn.className = 'disc-save-btn saved';
+  }
+};
+
+/* ── 저장 (시간 기록) ── */
+let lastSavedAt = null;
+let lastPrintedAt = null;
+
+function formatDateTime(ts){
+  if(!ts) return '없음';
+  const d=new Date(ts);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+window.saveMinutes = function(){
+  lastSavedAt = Date.now();
+  const payload = {
+    removedCal:    [...minRemovedCal],
+    removedNodate: [...minRemovedNodate],
+    removedDisc:   [...minRemovedDisc],
+    results:       minResults,
+    updatedAt:     lastSavedAt,
+    savedAt:       lastSavedAt,
+    printedAt:     lastPrintedAt||null
+  };
+  set(ref(db,`minutes/${selectedWeek.key}`), payload);
+  const msg = document.getElementById('minSavedMsg');
+  msg.style.display='inline'; setTimeout(()=>msg.style.display='none',2000);
+};
+
+/* ── 공유 (인쇄용 팝업) ── */
+window.shareMinutes = async function(){
+  // 1. 데이터 수집
+  const days  = getCalDays(selectedWeek.sun);
+  const byDate= {}; days.forEach(d=>{byDate[d.dateKey]=[];});
+  DEPTS.forEach(dept=>{ getAgendaItems(dept.id).forEach(([k,item])=>{
+    if(item.dateKey&&byDate[item.dateKey]!==undefined)
+      byDate[item.dateKey].push({key:`${dept.id}_${k}`,dept:dept.name,text:item.text,dateLabel:item.dateLabel});
+  });});
+
+  let calItems=[];
+  days.forEach(d=>{ byDate[d.dateKey].forEach(it=>{ if(!minRemovedCal.has(it.key)) calItems.push(it); }); });
+  let ndItems=[];
+  DEPTS.forEach(dept=>{ getAgendaItems(dept.id).forEach(([k,item])=>{ if(!item.dateKey){ const key=`${dept.id}_${k}`; if(!minRemovedNodate.has(key)) ndItems.push({dept:dept.name,text:item.text}); } }); });
+  let discAll=[];
+  DEPTS.forEach(d=>{ getDiscussItems(d.id).forEach(([k,it])=>{ discAll.push({key:`disc_${d.id}_${k}`,dept:d.name,text:it.text}); }); });
+  getAgoraItems().forEach(([k,it])=>{ discAll.push({key:`agora_${k}`,dept:'아고라',text:it.text}); });
+  const discVisible = discAll.filter(it=>!minRemovedDisc.has(it.key));
+
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
+  lastPrintedAt = Date.now();
+  // 인쇄 시간 Firebase에 저장
+  const printTime = lastPrintedAt;
+  set(ref(db,`minutes/${selectedWeek.key}/printedAt`), printTime);
+  const participants = DEPTS.map(d=>d.name+'부장').join(', ');
+
+  // 2. 로딩 팝업
+  const loadWin = window.open('','_blank','width=900,height=750');
+  loadWin.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>창현고 업무 소통방</title>
+  <style>body{font-family:-apple-system,'Noto Sans KR',sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f5f5;}
+  .box{text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+  .spinner{width:40px;height:40px;border:4px solid #e5e5e5;border-top-color:#1a56db;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  p{font-size:15px;color:#555;}small{font-size:12px;color:#aaa;}</style></head>
+  <body><div class="box"><div class="spinner"></div><p>AI가 협의록을 작성하고 있습니다...</p><small>잠시만 기다려 주세요 (10~20초)</small></div></body></html>`);
+  loadWin.document.close();
+
+  // 3. AI 요약 요청
+  const prompt = `당신은 학교 행정 문서 작성 전문가입니다.
+아래는 창현고등학교 부장회의 내용입니다. 이를 공식 협의록 형식으로 개조식(∙ 기호 사용)으로 간결하게 요약해 주세요.
+
+[주간 안건]
+${calItems.map(it=>`- [${it.dateLabel}] ${it.dept}: ${it.text}`).join('\n')||'없음'}
+
+[날짜 미지정 안건]
+${ndItems.map(it=>`- ${it.dept}: ${it.text}`).join('\n')||'없음'}
+
+[건의·논의사항 및 결정사항]
+${discVisible.map(it=>`- ${it.dept}: ${it.text} → 결정: ${minResults[it.key]||'(미기재)'}`).join('\n')||'없음'}
+
+다음 JSON 형식으로만 응답해 주세요 (다른 텍스트 없이):
+{
+  "jeondalSahang": "전달사항을 개조식으로 요약 (∙ 기호 사용, 줄바꿈 포함)",
+  "hyeopuiSahang": [
+    {"순번": 1, "제안및토론": "내용", "결정사항": "내용", "비고": ""}
+  ]
+}`;
+
+  let aiResult = null;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.find(c=>c.type==='text')?.text || '{}';
+    const clean = text.replace(/```json|```/g,'').trim();
+    aiResult = JSON.parse(clean);
+  } catch(e) {
+    console.error('AI 요약 실패:', e);
+    aiResult = {
+      jeondalSahang: calItems.map(it=>`∙ [${it.dateLabel}] ${it.dept} — ${it.text}`).join('\n') + '\n' + ndItems.map(it=>`∙ ${it.dept} — ${it.text}`).join('\n'),
+      hyeopuiSahang: discVisible.map((it,i)=>({ 순번:i+1, 제안및토론:`${it.dept}: ${it.text}`, 결정사항:minResults[it.key]||'', 비고:'' }))
+    };
+  }
+
+  // 4. 협의록 HTML 생성
+  const discTableRows = (aiResult.hyeopuiSahang||[]).map(row=>`
+    <tr>
+      <td style="text-align:center;width:36px">${row['순번']}</td>
+      <td style="white-space:pre-wrap;line-height:1.7">${(row['제안및토론']||'').replace(/\n/g,'<br>')}</td>
+      <td style="white-space:pre-wrap;line-height:1.7">${(row['결정사항']||'').replace(/\n/g,'<br>')}</td>
+      <td>${row['비고']||''}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<title>창현고 업무 소통방</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,'Noto Sans KR',sans-serif;max-width:900px;margin:0 auto;padding:24px;color:#1a1a1a;font-size:14px;}
+  .btn-wrap{display:flex;gap:10px;margin-bottom:20px;}
+  .btn{padding:9px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;}
+  .btn-print{background:#1a56db;color:#fff;} .btn-copy{background:#f0fdf4;color:#16a34a;border:1px solid #86efac;}
+  /* 협의록 양식 */
+  .doc-title{text-align:center;font-size:18px;font-weight:700;margin-bottom:16px;letter-spacing:2px;}
+  .doc-table{width:100%;border-collapse:collapse;margin-bottom:0;}
+  .doc-table th,.doc-table td{border:1px solid #333;padding:6px 10px;vertical-align:top;}
+  .doc-table th{background:#f0f0f0;font-weight:700;white-space:nowrap;text-align:center;width:90px;}
+  /* 결재란 */
+  .approval{float:right;border-collapse:collapse;margin-bottom:12px;}
+  .approval td{border:1px solid #333;padding:6px 16px;text-align:center;font-size:13px;}
+  .approval .sign-cell{height:48px;min-width:60px;}
+  .clearfix::after{content:'';display:table;clear:both;}
+  /* 부서협의 테이블 */
+  .discuss-table{width:100%;border-collapse:collapse;margin-top:-1px;}
+  .discuss-table th,.discuss-table td{border:1px solid #333;padding:6px 10px;vertical-align:top;font-size:13px;}
+  .discuss-table th{background:#f0f0f0;font-weight:700;text-align:center;}
+  .jeondalSahang{white-space:pre-wrap;line-height:1.8;font-size:13px;}
+  @media print{.btn-wrap{display:none!important;} body{padding:10px;}}
+</style></head><body>
+
+<div class="btn-wrap">
+  <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+  <button class="btn btn-copy" onclick="copyText()">📋 텍스트 복사</button>
+</div>
+
+<div class="clearfix">
+  <table class="approval">
+    <tr><td>교&nbsp;&nbsp;감</td><td>교&nbsp;&nbsp;장</td></tr>
+    <tr><td class="sign-cell"></td><td class="sign-cell"></td></tr>
+  </table>
+  <div class="doc-title">부 장 회 의 협 의 록</div>
+</div>
+
+<table class="doc-table">
+  <tr>
+    <th>일&nbsp;&nbsp;&nbsp;시</th>
+    <td>
+      <div style="font-size:13px;line-height:1.8">
+        💾 최종 저장: <strong>${lastSavedAt ? formatDateTime(lastSavedAt) : '미저장'}</strong><br>
+        🖨️ 최종 인쇄: <strong>${formatDateTime(printTime)}</strong>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th>협의내용</th>
+    <td>정기 협의 — ${selectedWeek.label}</td>
+  </tr>
+  <tr>
+    <th>참&nbsp;여&nbsp;자</th>
+    <td>${participants}</td>
+  </tr>
+  <tr>
+    <th>전달사항<br>(공통)</th>
+    <td><div class="jeondalSahang">${(aiResult.jeondalSahang||'').replace(/\n/g,'<br>')}</div></td>
+  </tr>
+</table>
+
+<table class="discuss-table">
+  <thead>
+    <tr>
+      <th colspan="4" style="text-align:left;padding:7px 10px">부서 협의사항</th>
+    </tr>
+    <tr>
+      <th style="width:36px">순</th>
+      <th>제안 및 토론</th>
+      <th>결정 사항</th>
+      <th style="width:70px">비고</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${discTableRows || '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:16px">협의사항 없음</td></tr>'}
+  </tbody>
+</table>
+
+<script>
+function copyText(){
+  const rows=[...document.querySelectorAll('.discuss-table tbody tr')].map(r=>[...r.querySelectorAll('td')].map(c=>c.innerText).join(' | ')).join('\\n');
+  const txt="부장회의 협의록 — ${selectedWeek.label}\\n${dateStr}\\n\\n[전달사항]\\n${(aiResult.jeondalSahang||'').replace(/\n/g,'\\n')}\\n\\n[부서협의사항]\\n"+rows;
+  navigator.clipboard.writeText(txt).then(()=>alert('클립보드에 복사됐어요! 😊'));
+}
+<\/script>
+</body></html>`;
+
+  loadWin.document.open();
+  loadWin.document.write(html);
+  loadWin.document.close();
+};
+
+/* ── 아고라 모달 ── */
+window.openAgora = function(){
+  currentDept=null;
+  document.getElementById('modalTitle').textContent='🗣 아고라 — 자유제안 및 토론';
+  renderAgoraModal();
+  document.getElementById('overlay').classList.add('open');
+};
+function renderAgoraModal(){
+  const items=getAgoraItems();
+  document.getElementById('modalBody').innerHTML=`<div class="agora-modal-body">
+    <p class="section-label" style="color:var(--blue400)">자유제안 및 토론 목록</p>
+    <div id="agoraList">${!items.length?'<p style="font-size:13px;color:#4ade80;margin-bottom:12px">아직 제안이 없습니다. 첫 번째로 제안해보세요!</p>':
+      items.map(([k,it],i)=>`<div class="agora-item-row"><span class="agora-item-num">${i+1}.</span><span class="agora-item-text">${esc(it.text)}</span><button class="del-btn" onclick="window.delAgora('${k}')">×</button></div>`).join('')}</div>
+    <p class="section-label" style="color:var(--blue400);margin-top:14px">새 제안 추가</p>
+    <div class="agora-input-row"><textarea id="newAgoraText" placeholder="자유롭게 제안하거나 토론하고 싶은 내용을 입력하세요"></textarea>
+    <button class="btn-add" onclick="window.addAgora()">+ 추가</button></div></div>`;
+  document.getElementById('modalFoot').innerHTML=`<button class="btn-secondary" onclick="closeModal()">닫기</button>`;
+}
+function refreshAgoraList(){
+  const el=document.getElementById('agoraList'); if(!el) return;
+  const items=getAgoraItems();
+  el.innerHTML=!items.length?'<p style="font-size:13px;color:#4ade80;margin-bottom:12px">아직 제안이 없습니다.</p>':
+    items.map(([k,it],i)=>`<div class="agora-item-row"><span class="agora-item-num">${i+1}.</span><span class="agora-item-text">${esc(it.text)}</span><button class="del-btn" onclick="window.delAgora('${k}')">×</button></div>`).join('');
+}
+window.addAgora=()=>{ const t=(document.getElementById('newAgoraText').value||'').trim(); if(!t) return; const ts=Date.now(); set(ref(db,`agora/${ts}`),{text:t,createdAt:ts,authorId:window._myId}); document.getElementById('newAgoraText').value=''; };
+window.delAgora=key=>{ if(!confirm('삭제할까요?')) return; remove(ref(db,`agora/${key}`)); };
+
+/* ── 일반 부서 모달 ── */
+window.openDept=function(id){
+  currentDept=DEPTS.find(d=>d.id===id);
+  document.getElementById('modalTitle').textContent=currentDept.name+' 안건';
+  selectedDate=null; renderModalShell();
+  document.getElementById('overlay').classList.add('open');
+};
+function renderModalShell(){
+  const days=getCalDays(selectedWeek.sun);
+  const db2=`<button class="date-btn no-date selected" id="dbn-none" onclick="window.pickDate(null,null)">날짜 없음</button>`+
+    days.map(d=>`<button class="date-btn" id="dbn-${d.dateKey}" onclick="window.pickDate('${d.label}','${d.dateKey}')">${d.label}</button>`).join('');
+
+  // 교무기획부 전용 감독조 편성 섹션
+  const isEduPlan = currentDept && currentDept.id === 'edu_plan';
+  const weekDays  = ['월','화','수','목','금'];
+  const weekDayKeys = getCalDays(selectedWeek.sun).slice(1,6); // 월~금
+
+  const dutySectionHtml = isEduPlan ? `
+    <hr class="section-divider">
+    <p class="section-label" style="color:var(--blue500)">🌙 야간 자기주도학습 감독조 편성</p>
+    <div style="display:flex;flex-direction:column;gap:8px" id="dutyRosterList">
+      ${weekDayKeys.map((d,i)=>{
+        const saved = dutyData[d.dateKey] || '';
+        return `<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:700;color:var(--blue600);min-width:32px;background:var(--blue50);padding:4px 8px;border-radius:8px;text-align:center">${weekDays[i]}</span>
+          <input type="text" id="duty-${d.dateKey}"
+            value="${saved.replace(/"/g,'&quot;')}"
+            placeholder="감독 교사 이름"
+            style="flex:1;padding:8px 12px;border:1.5px solid var(--grey300);border-radius:8px;font-size:14px;font-family:inherit;outline:none"
+            onfocus="this.style.borderColor='var(--blue500)'"
+            onblur="this.style.borderColor='var(--grey300)'" />
+          <button onclick="window.saveDuty('${d.dateKey}')"
+            style="background:var(--blue500);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">저장</button>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  document.getElementById('modalBody').innerHTML=`<div class="modal-body">
+    <p class="section-label">현재 안건 목록</p><div class="item-list" id="itemList"></div>
+    <p class="section-label">날짜 선택 (선택사항)</p><div class="date-picker">${db2}</div>
+    <p class="section-label">새 안건 추가</p>
+    <div class="input-row"><textarea id="newItemText" placeholder="안건 내용을 입력하세요"></textarea><button class="btn-add" onclick="window.addItem()">+ 추가</button></div>
+    <hr class="section-divider">
+    <p class="section-label">건의 및 논의사항 목록</p><div class="discuss-list" id="discussList"></div>
+    <p class="section-label">건의 및 논의사항 추가</p>
+    <div class="input-row"><textarea id="newDiscussText" placeholder="건의 및 논의사항을 입력하세요"></textarea><button class="btn-add amber" onclick="window.addDiscuss()">+ 추가</button></div>
+    ${dutySectionHtml}
+    </div>`;
+  document.getElementById('modalFoot').innerHTML=`<button class="btn-secondary" onclick="closeModal()">닫기</button>`;
+  refreshItemList(); refreshDiscussList();
+}
+function refreshItemList(){
+  const el=document.getElementById('itemList'); if(!el||!currentDept) return;
+  const items=getAgendaItems(currentDept.id), days=getCalDays(selectedWeek.sun);
+  if(!items.length){ el.innerHTML='<p style="font-size:13px;color:#aaa;margin-bottom:4px">아직 입력된 안건이 없습니다</p>'; return; }
+  el.innerHTML=items.map(([key,item],i)=>{
+    const dl=item.dateLabel||null, dk=item.dateKey||null;
+    const de=days.map(d=>`<button class="de-btn ${dk===d.dateKey?'selected':''}" onclick="window.setItemDate('${key}','${d.label}','${d.dateKey}')">${d.label}</button>`).join('')+`<button class="de-btn no-date ${!dk?'selected':''}" onclick="window.setItemDate('${key}',null,null)">없음</button>`;
+    return `<div class="item-row"><span class="item-num">${i+1}.</span><div class="item-content">
+      <div class="item-text">${esc(item.text)}</div>
+      <div class="item-date-row"><span class="item-date-chip ${!dl?'none':''}">${dl||'날짜 없음'}</span>
+      <button class="edit-date-btn" onclick="window.toggleDateEdit('${key}')">날짜 수정</button></div>
+      <div class="date-edit-area" id="dedit-${key}">${de}</div></div>
+      <button class="del-btn" onclick="window.delItem('${key}')">×</button></div>`;
+  }).join('');
+}
+function refreshDiscussList(){
+  const el=document.getElementById('discussList'); if(!el||!currentDept) return;
+  const items=getDiscussItems(currentDept.id);
+  if(!items.length){ el.innerHTML='<p style="font-size:13px;color:#aaa;margin-bottom:4px">아직 입력된 건의사항이 없습니다</p>'; return; }
+  el.innerHTML=items.map(([k,it],i)=>`<div class="discuss-item-row"><span class="item-num">${i+1}.</span><span class="discuss-item-text">${esc(it.text)}</span><button class="del-btn" onclick="window.delDiscuss('${k}')">×</button></div>`).join('');
+}
+window.pickDate=(label,dateKey)=>{ selectedDate=dateKey?{label,dateKey}:null; document.querySelectorAll('.date-btn').forEach(b=>b.classList.remove('selected')); (dateKey?document.getElementById(`dbn-${dateKey}`):document.getElementById('dbn-none'))?.classList.add('selected'); };
+window.toggleDateEdit=key=>document.getElementById(`dedit-${key}`)?.classList.toggle('open');
+window.setItemDate=(key,label,dateKey)=>{ update(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/${key}`),{dateLabel:label||null,dateKey:dateKey||null}); document.getElementById(`dedit-${key}`)?.classList.remove('open'); };
+/* ── 감독조 편성 저장 ── */
+window.saveDuty = function(dateKey){
+  const val = (document.getElementById(`duty-${dateKey}`)?.value||'').trim();
+  const dutyRef = ref(db, `duty_roster/${selectedWeek.key}/${dateKey}`);
+  if(val){
+    set(dutyRef, val);
+  } else {
+    remove(dutyRef);
+  }
+  // 저장 피드백
+  const btn = document.querySelector(`button[onclick="window.saveDuty('${dateKey}')"]`);
+  if(btn){ btn.textContent='✓ 저장됨'; btn.style.background='var(--green500)';
+    setTimeout(()=>{ btn.textContent='저장'; btn.style.background='var(--blue500)'; }, 1500); }
+};
+
+window.addItem=()=>{ const t=(document.getElementById('newItemText').value||'').trim(); if(!t) return; const k=Date.now().toString(),data={text:t}; if(selectedDate){data.dateLabel=selectedDate.label;data.dateKey=selectedDate.dateKey;} set(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/${k}`),data); document.getElementById('newItemText').value=''; selectedDate=null; document.querySelectorAll('.date-btn').forEach(b=>b.classList.remove('selected')); document.getElementById('dbn-none')?.classList.add('selected'); };
+window.delItem=key=>{ if(!confirm('삭제할까요?')) return; remove(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/${key}`)); };
+window.addDiscuss=()=>{ const t=(document.getElementById('newDiscussText').value||'').trim(); if(!t) return; set(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/discusses/${Date.now()}`),{text:t}); document.getElementById('newDiscussText').value=''; };
+window.delDiscuss=key=>{ if(!confirm('삭제할까요?')) return; remove(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/discusses/${key}`)); };
+window.closeModal=()=>{ document.getElementById('overlay').classList.remove('open'); currentDept=null; };
+window.closeOverlay=e=>{ if(e.target===document.getElementById('overlay')) closeModal(); };
+/* 시설 수정 모달 */
+window.editFacility = function(key){
+  const v = facilityData[key];
+  if(!v) return;
+  document.getElementById('modalTitle').textContent = '✏️ 신청 수정';
+  document.getElementById('modalBody').innerHTML = `<div class="modal-body">
+    <div class="form-group">
+      <label class="form-label">신청자 이름</label>
+      <input type="text" id="editName" class="form-input" value="${v.name||''}" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">장소</label>
+      <input type="text" id="editPlace" class="form-input" value="${v.place||''}" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">내용</label>
+      <textarea id="editContent" class="form-textarea">${v.content||''}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">긴급도</label>
+      <div style="display:flex;gap:8px">
+        <button id="editUrgNormal" class="urgency-btn urgency-normal${v.urgency!=='urgent'?' active-urgency':''}" onclick="window.setEditUrgency('normal')">📌 일반</button>
+        <button id="editUrgUrgent" class="urgency-btn urgency-urgent${v.urgency==='urgent'?' active-urgency':''}" onclick="window.setEditUrgency('urgent')">🚨 긴급</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('modalFoot').innerHTML = `
+    <button class="btn-secondary" onclick="closeModal()">취소</button>
+    <button class="btn-add" onclick="window.saveEditFacility('${key}')">저장</button>`;
+  window._editUrgency = v.urgency || 'normal';
+  document.getElementById('overlay').classList.add('open');
+};
+
+window.setEditUrgency = function(u){
+  window._editUrgency = u;
+  document.getElementById('editUrgNormal').className=`urgency-btn urgency-normal${u==='normal'?' active-urgency':''}`;
+  document.getElementById('editUrgUrgent').className=`urgency-btn urgency-urgent${u==='urgent'?' active-urgency':''}`;
+};
+
+window.saveEditFacility = function(key){
+  const name    = (document.getElementById('editName').value||'').trim();
+  const place   = (document.getElementById('editPlace').value||'').trim();
+  const content = (document.getElementById('editContent').value||'').trim();
+  if(!name||!place||!content){ alert('모든 항목을 입력해주세요'); return; }
+  update(ref(db,`facility/${key}`),{ name, place, content, urgency: window._editUrgency });
+  closeModal();
+};
+
+window.deleteFacility = function(key){
+  if(!confirm('이 신청 항목을 삭제할까요?')) return;
+  remove(ref(db,`facility/${key}`));
+};
+
+window.switchTab=tab=>{
+  ['input','board','daily','agora-nav','facility'].forEach(t=>{
+    document.getElementById('section-'+t).style.display=t===tab?'':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='daily') renderCalendar();
+  if(tab==='facility') renderFacility();
+  if(tab==='agora-nav') renderAgoraNav();
+};
+
+/* ══════════════════════════
+   아고라 탭
+══════════════════════════ */
+const AGORA_ADMIN_PW = '0409';
+
+/* ── 날짜 포맷 헬퍼 ── */
+function fmtDate(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+/* ── 댓글 목록 렌더링 (재귀: 대댓글 포함) ── */
+function renderComments(comments, parentPath, depth){
+  if(!comments || typeof comments !== 'object') return '';
+  const depth2 = depth || 0;
+  const sorted = Object.entries(comments).sort((a,b)=>(a[1].createdAt||0)-(b[1].createdAt||0));
+  return sorted.map(([ck, cm])=>{
+    const repliesHtml = cm.replies ? renderComments(cm.replies, `${parentPath}/${ck}/replies`, depth2+1) : '';
+    const indent = depth2 > 0 ? 'margin-left:20px;border-left:2px solid var(--grey200);padding-left:10px;' : '';
+    const safeId = (parentPath+'/'+ck).replace(/[^a-zA-Z0-9_-]/g,'_');
+    const isMyComment = cm.authorId && cm.authorId === window._myId;
+    const editBtn = isMyComment
+      ? `<button data-cpath="${parentPath}/${ck}" data-ctxt="${esc(cm.text||'')}" onclick="window.editComment(this.dataset.cpath,this.dataset.ctxt,'ctxt-edit-${safeId}')" title="수정" style="font-size:10px;color:var(--blue400);background:none;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">✏️</button>`
+      : '';
+    return `<div class="agora-comment-item" style="${indent}margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div id="ctxt-view-${safeId}" style="font-size:13px;color:var(--grey700);line-height:1.5;">${esc(cm.text||'')}</div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          ${editBtn}
+          <button data-cpath="${parentPath}/${ck}" data-ismine="${isMyComment?'1':'0'}" onclick="window.deleteComment(this.dataset.cpath,this.dataset.ismine)" title="삭제" style="font-size:10px;color:var(--grey300);background:none;border:none;cursor:pointer;white-space:nowrap;">삭제</button>
+        </div>
+      </div>
+      <div id="ctxt-edit-${safeId}" style="display:none;margin-top:4px;">
+        <textarea style="width:100%;font-size:12px;padding:6px 8px;border:1px solid var(--blue200);border-radius:6px;resize:vertical;min-height:48px;box-sizing:border-box;">${esc(cm.text||'')}</textarea>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <button data-cpath="${parentPath}/${ck}" data-safeid="${safeId}" onclick="window.saveEditComment(this.dataset.cpath,this.dataset.safeid)" style="font-size:12px;background:var(--blue500);color:#fff;border:none;border-radius:6px;padding:3px 12px;cursor:pointer;">저장</button>
+          <button onclick="document.getElementById('ctxt-edit-${safeId}').style.display='none'" style="font-size:12px;background:var(--grey100);color:var(--grey700);border:none;border-radius:6px;padding:3px 12px;cursor:pointer;">취소</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--grey400);margin-top:2px;">${fmtDate(cm.createdAt)}</div>
+      <button onclick="window.toggleReplyForm('rfm-${safeId}')" style="font-size:11px;color:var(--blue500);background:none;border:none;cursor:pointer;padding:2px 0;">↩ 답글</button>
+      <div id="rfm-${safeId}" style="display:none;margin-top:6px;">
+        <textarea id="rtxt-${safeId}" placeholder="답글을 입력하세요" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid var(--grey200);border-radius:6px;resize:vertical;min-height:48px;box-sizing:border-box;"></textarea>
+        <button data-rpath="${parentPath}/${ck}/replies" data-rtxt="rtxt-${safeId}" data-rfm="rfm-${safeId}" onclick="window.addReply(this.dataset.rpath,this.dataset.rtxt,this.dataset.rfm)" style="margin-top:4px;font-size:12px;background:var(--blue500);color:#fff;border:none;border-radius:6px;padding:3px 12px;cursor:pointer;">등록</button>
+      </div>
+      ${repliesHtml}
+    </div>`;
+  }).join('');
+}
+
+function renderAgoraNav(){
+  const el = document.getElementById('agoraNavList');
+  if(!el) return;
+  const items = getAgoraItems();
+  if(!items.length){
+    el.innerHTML = '<div class="empty" style="padding:60px 0;color:var(--grey400);text-align:center">🗣️ 아직 올라온 발제가 없습니다</div>';
+    return;
+  }
+  const sorted = [...items].sort((a,b)=> (b[1].createdAt||0) - (a[1].createdAt||0));
+
+  el.innerHTML = sorted.map(([key, it]) => {
+    const likes  = it.likes ? Object.keys(it.likes).length : 0;
+    const myLike = it.likes && it.likes[window._myId];
+    const cCount = it.comments ? Object.keys(it.comments).length : 0;
+    const commentsHtml = renderComments(it.comments, `agora/${key}/comments`, 0);
+
+    return `<div class="agora-nav-card">
+      <div class="agora-nav-card-header">
+        <div class="agora-nav-text">${esc(it.text)}</div>
+        <span class="agora-nav-date">${fmtDate(it.createdAt)}</span>
+      </div>
+      <div class="agora-nav-footer">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="agora-like-btn ${myLike?'liked':''}" onclick="window.toggleLike('${key}')">${myLike?'❤️':'🤍'} ${likes}</button>
+          <button onclick="window.toggleCommentForm('cform-${key}')" style="font-size:12px;color:var(--blue500);background:none;border:1px solid var(--blue200);border-radius:6px;padding:2px 10px;cursor:pointer;">💬 댓글${cCount>0?' '+cCount:''}</button>
+        </div>
+        <div style="display:flex;gap:6px;">
+          ${(it.authorId && it.authorId===window._myId) ? `<button data-akey="${key}" data-atxt="${esc(it.text)}" onclick="window.editAgoraItem(this.dataset.akey,this.dataset.atxt)" style="font-size:12px;color:var(--blue500);background:none;border:1px solid var(--blue200);border-radius:6px;padding:2px 8px;cursor:pointer;">✏️ 수정</button>` : ''}
+          <button data-akey="${key}" data-ismine="${(it.authorId && it.authorId===window._myId)?'1':'0'}" onclick="window.deleteAgoraItem(this.dataset.akey,this.dataset.ismine)" style="font-size:12px;color:#ef4444;background:none;border:1px solid #fca5a5;border-radius:6px;padding:2px 8px;cursor:pointer;">🗑️ 삭제</button>
+        </div>
+      </div>
+      <div id="cform-${key}" style="display:none;margin-top:10px;">
+        <div>${commentsHtml}</div>
+        <div style="display:flex;gap:6px;margin-top:${cCount>0?'10':'0'}px;">
+          <textarea id="ctxt-${key}" placeholder="댓글을 입력하세요 (익명)" style="flex:1;font-size:13px;padding:7px 10px;border:1px solid var(--grey200);border-radius:8px;resize:vertical;min-height:52px;box-sizing:border-box;"></textarea>
+          <button data-akey="${key}" onclick="window.addComment(this.dataset.akey)" style="font-size:13px;background:var(--blue500);color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;white-space:nowrap;align-self:flex-end;">등록</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── 댓글 폼 토글 ── */
+window.toggleCommentForm = function(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+};
+window.toggleReplyForm = function(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+};
+
+/* ── 댓글 추가 ── */
+window.addComment = function(agoraKey){
+  const text = (document.getElementById('ctxt-'+agoraKey)?.value||'').trim();
+  if(!text){ alert('내용을 입력하세요'); return; }
+  const ts = Date.now();
+  set(ref(db, `agora/${agoraKey}/comments/${ts}`), { text, createdAt: ts, authorId: window._myId });
+  document.getElementById('ctxt-'+agoraKey).value = '';
+};
+
+/* ── 대댓글 추가 ── */
+window.addReply = function(rpath, rtxtId, rfmId){
+  const text = (document.getElementById(rtxtId)?.value||'').trim();
+  if(!text){ alert('내용을 입력하세요'); return; }
+  const ts = Date.now();
+  set(ref(db, `${rpath}/${ts}`), { text, createdAt: ts, authorId: window._myId });
+  if(document.getElementById(rtxtId)) document.getElementById(rtxtId).value = '';
+  if(document.getElementById(rfmId)) document.getElementById(rfmId).style.display='none';
+};
+
+/* ── 댓글/대댓글 삭제 (본인 or 관리자 0409) ── */
+window.deleteComment = function(commentPath, isMine){
+  if(isMine === '1'){
+    if(!confirm('댓글을 삭제할까요?')) return;
+  } else {
+    const pw = prompt('관리자 비밀번호를 입력하세요 (0409):');
+    if(pw !== AGORA_ADMIN_PW){ alert('비밀번호가 맞지 않습니다'); return; }
+    if(!confirm('댓글을 삭제할까요?')) return;
+  }
+  remove(ref(db, commentPath));
+};
+
+/* ── 댓글 수정 (본인만) ── */
+window.editComment = function(commentPath, origText, editDivId){
+  const el = document.getElementById(editDivId);
+  if(!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
+window.saveEditComment = function(commentPath, safeId){
+  const el = document.getElementById('ctxt-edit-'+safeId);
+  if(!el) return;
+  const ta = el.querySelector('textarea');
+  const newText = ta?.value?.trim();
+  if(!newText){ alert('내용을 입력하세요'); return; }
+  update(ref(db, commentPath), { text: newText });
+  el.style.display = 'none';
+};
+
+/* ── 발제 삭제 (본인 or 관리자 0409) ── */
+window.deleteAgoraItem = function(key, isMine){
+  if(isMine === '1'){
+    if(!confirm('이 발제와 댓글 전체를 삭제할까요?')) return;
+  } else {
+    const pw = prompt('관리자 비밀번호를 입력하세요 (0409):');
+    if(pw !== AGORA_ADMIN_PW){ alert('비밀번호가 맞지 않습니다'); return; }
+    if(!confirm('이 발제와 댓글 전체를 삭제할까요?')) return;
+  }
+  remove(ref(db, `agora/${key}`));
+};
+
+/* ── 발제 수정 (본인만) ── */
+window.editAgoraItem = function(key, origText){
+  const newText = prompt('발제 내용을 수정하세요:', origText);
+  if(newText === null) return;
+  const trimmed = newText.trim();
+  if(!trimmed){ alert('내용을 입력하세요'); return; }
+  update(ref(db, `agora/${key}`), { text: trimmed });
+};
+
+/* ══════════════════════════
+   시설 관리
+══════════════════════════ */
+let currentUrgency = 'normal';
+let facilityData   = {};
+const ONE_WEEK_MS  = 7 * 24 * 60 * 60 * 1000;
+
+// Firebase 시설 구독 + 1주일 지난 완료 항목 자동 삭제
+onValue(ref(db,'facility'), snap=>{
+  facilityData = snap.val()||{};
+  // 자동 삭제: status=done 이고 doneAt 기준 1주일 초과
+  const now = Date.now();
+  Object.entries(facilityData).forEach(([key,v])=>{
+    if(v.status==='done' && v.doneAt && (now - v.doneAt) > ONE_WEEK_MS){
+      remove(ref(db,`facility/${key}`));
+    }
+  });
+  if(document.getElementById('section-facility').style.display!=='none') renderFacility();
+});
+
+function switchFtab(t){
+  ['active','new'].forEach(id=>{
+    document.getElementById('fsection-'+id).style.display=id===t?'':'none';
+    const btn=document.getElementById('ftab-'+id);
+    if(btn) btn.classList.toggle('ftab-on', id===t && t!=='new');
+  });
+  if(t==='active') renderFacility();
+}
+window.switchFtab=switchFtab;
+
+function renderFacility(){
+  // 완료 후 1주일 안 된 것만 표시 (자동삭제 전까지)
+  const all = Object.entries(facilityData).sort((a,b)=>b[1].createdAt-a[1].createdAt);
+  const el = document.getElementById('facilityList');
+  if(!el) return;
+
+  function cardHtml([key,v]){
+    const urgCls = v.urgency==='urgent'?'urgent':'normal';
+    const urgTag = v.urgency==='urgent'?'🚨 긴급':'📌 일반';
+    const date   = new Date(v.createdAt);
+    const dateStr= `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+    const isDone = v.status==='done';
+
+    // 상태 배지 흐름: 접수대기 → (+진행중) → (+완료)
+    let flowBadges = `<span class="flow-tag waiting">접수 대기</span>`;
+    if(v.status==='progress'||v.status==='done'){
+      flowBadges += `<span class="flow-arrow">›</span><span class="flow-tag progress">🔧 진행중</span>`;
+    }
+    if(v.status==='done'){
+      flowBadges += `<span class="flow-arrow">›</span><span class="flow-tag done">✅ 완료</span>`;
+    }
+
+    // 액션 버튼
+    let actionHtml = '';
+    if(v.status==='waiting'){
+      actionHtml = `<div class="facility-action">
+        <span class="facility-action-hint">접수하셨나요?</span>
+        <button class="facility-action-btn btn-progress" onclick="window.setFacilityStatus('${key}','progress')">✔ 접수 완료</button>
+      </div>`;
+    } else if(v.status==='progress'){
+      actionHtml = `<div class="facility-action">
+        <span class="facility-action-hint">수리/교체가 완료됐나요?</span>
+        <div style="display:flex;gap:6px">
+          <button class="facility-action-btn" style="background:var(--grey100);color:var(--grey600);border:1.5px solid var(--grey300)" onclick="window.setFacilityStatus('${key}','waiting')">↩ 되돌리기</button>
+          <button class="facility-action-btn btn-done" onclick="window.setFacilityStatus('${key}','done')">✅ 완료 처리</button>
+        </div>
+      </div>`;
+    } else if(v.status==='done'){
+      const doneDate = v.doneAt ? new Date(v.doneAt) : null;
+      const deleteSoon = doneDate ? `완료일로부터 7일 후 자동 삭제` : '';
+      actionHtml = `<div class="facility-action" style="background:#f0fdf4;justify-content:space-between">
+        <span class="facility-action-hint" style="color:#16a34a">🎉 처리 완료! ${deleteSoon}</span>
+        <button class="facility-action-btn" style="background:var(--grey100);color:var(--grey600);border:1.5px solid var(--grey300)" onclick="window.setFacilityStatus('${key}','progress')">↩ 되돌리기</button>
+      </div>`;
+    }
+
+    // 날짜/시간 분리
+    const datePart = `${date.getMonth()+1}/${date.getDate()}`;
+    const timePart = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+
+    return `<div class="facility-card ${urgCls}${isDone?' done-card':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <div>
+          <div class="facility-badges" style="margin-bottom:8px">
+            <span class="urgency-tag ${urgCls}">${urgTag}</span>
+            ${flowBadges}
+          </div>
+          <div class="facility-place">📍 ${v.place}</div>
+          <div class="facility-content" style="margin-top:6px">${v.content}</div>
+          <div class="facility-meta">신청자: ${v.name}</div>
+        </div>
+        <div class="facility-top-right">
+          <div class="facility-date-box">
+            <div class="date-line">${datePart}</div>
+            <div class="time-line">${timePart}</div>
+          </div>
+          <div class="facility-icon-btns">
+            <button class="facility-icon-btn" onclick="window.editFacility('${key}')" title="수정">✏️</button>
+            <button class="facility-icon-btn" onclick="window.deleteFacility('${key}')" title="삭제">🗑️</button>
+          </div>
+        </div>
+      </div>
+      ${actionHtml}
+    </div>`;
+  }
+
+  el.innerHTML = all.length ? all.map(cardHtml).join('') : `<div class="empty" style="padding:60px 0;color:var(--grey400);text-align:center">🔧 신청된 시설 수리·교체 내역이 없습니다</div>`;
+}
+
+window.setFacilityStatus = function(key, status){
+  const updates = {status};
+  if(status==='done') updates.doneAt = Date.now();
+  update(ref(db,`facility/${key}`), updates);
+};
+
+window.setUrgency = function(u){
+  currentUrgency=u;
+  document.getElementById('fUrgNormal').className=`urgency-btn urgency-normal${u==='normal'?' active-urgency':''}`;
+  document.getElementById('fUrgUrgent').className=`urgency-btn urgency-urgent${u==='urgent'?' active-urgency':''}`;
+};
+
+window.submitFacility = function(){
+  const name    =(document.getElementById('fName').value||'').trim();
+  const place   =(document.getElementById('fPlace').value||'').trim();
+  const content =(document.getElementById('fContent').value||'').trim();
+  if(!name)    { alert('신청자 이름을 입력해주세요'); document.getElementById('fName').focus(); return; }
+  if(!place)   { alert('장소를 입력해주세요'); document.getElementById('fPlace').focus(); return; }
+  if(!content) { alert('내용을 입력해주세요'); document.getElementById('fContent').focus(); return; }
+  set(ref(db,`facility/${Date.now()}`),{ name,place,content,urgency:currentUrgency,status:'waiting',createdAt:Date.now() });
+  document.getElementById('fName').value='';
+  document.getElementById('fPlace').value='';
+  document.getElementById('fContent').value='';
+  window.setUrgency('normal');
+  alert('✅ 신청이 접수되었습니다!');
+  switchFtab('active');
+};
+</script>
+</body>
+</html>
