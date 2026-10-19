@@ -436,7 +436,7 @@
     </div>
   </div>
 
-<div class="version-bar"><span>🛠 v22 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
+<div class="version-bar"><span>🛠 v23 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -1209,7 +1209,16 @@ window.switchTab=tab=>{
 /* ══════════════════════════
    아고라 탭
 ══════════════════════════ */
-const AGORA_ADMIN_PW = '0409';
+/* 관리자 코드(6자리)는 평문 대신 SHA-256 해시로만 보관 (소스를 열어봐도 코드가 바로 보이지 않도록) */
+const AGORA_ADMIN_HASH = '6b16538457b191723f93f43f7020b80787bfbd634779bcaa1b609c16c9bb5e30';
+async function checkAdminCode(code){
+  try{
+    if(!window.crypto || !crypto.subtle){ alert('이 환경에서는 관리자 코드 확인을 할 수 없습니다 (https 주소로 접속해 주세요)'); return false; }
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(code||'').trim()));
+    const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    return hex === AGORA_ADMIN_HASH;
+  }catch(e){ return false; }
+}
 
 /* ── 날짜 포맷 헬퍼 ── */
 function fmtDate(ts){
@@ -1330,13 +1339,14 @@ window.addReply = function(rpath, rtxtId, rfmId){
   if(document.getElementById(rfmId)) document.getElementById(rfmId).style.display='none';
 };
 
-/* ── 댓글/대댓글 삭제 (본인 or 관리자 0409) ── */
-window.deleteComment = function(commentPath, isMine){
+/* ── 댓글/대댓글 삭제 (본인 or 관리자 코드 6자리) ── */
+window.deleteComment = async function(commentPath, isMine){
   if(isMine === '1'){
     if(!confirm('댓글을 삭제할까요?')) return;
   } else {
-    const pw = prompt('관리자 비밀번호를 입력하세요 (0409):');
-    if(pw !== AGORA_ADMIN_PW){ alert('비밀번호가 맞지 않습니다'); return; }
+    const pw = prompt('다른 분이 쓴 글입니다.\n삭제하려면 관리자 코드(6자리)를 입력하세요:');
+    if(pw === null) return;
+    if(!(await checkAdminCode(pw))){ alert('관리자 코드가 맞지 않습니다'); return; }
     if(!confirm('댓글을 삭제할까요?')) return;
   }
   remove(ref(db, commentPath));
@@ -1358,13 +1368,14 @@ window.saveEditComment = function(commentPath, safeId){
   el.style.display = 'none';
 };
 
-/* ── 발제 삭제 (본인 or 관리자 0409) ── */
-window.deleteAgoraItem = function(key, isMine){
+/* ── 발제 삭제 (본인 or 관리자 코드 6자리) ── */
+window.deleteAgoraItem = async function(key, isMine){
   if(isMine === '1'){
     if(!confirm('이 발제와 댓글 전체를 삭제할까요?')) return;
   } else {
-    const pw = prompt('관리자 비밀번호를 입력하세요 (0409):');
-    if(pw !== AGORA_ADMIN_PW){ alert('비밀번호가 맞지 않습니다'); return; }
+    const pw = prompt('다른 분이 쓴 글입니다.\n삭제하려면 관리자 코드(6자리)를 입력하세요:');
+    if(pw === null) return;
+    if(!(await checkAdminCode(pw))){ alert('관리자 코드가 맞지 않습니다'); return; }
     if(!confirm('이 발제와 댓글 전체를 삭제할까요?')) return;
   }
   remove(ref(db, `agora/${key}`));
