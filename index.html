@@ -436,7 +436,7 @@
     </div>
   </div>
 
-<div class="version-bar"><span>🛠 v23 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
+<div class="version-bar"><span>🛠 v24 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -508,8 +508,7 @@ function escRaw(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 let weekOptions  = getWeekOptions();
 let selectedWeek = weekOptions[4]; // index 4 = 이번 주
-let allData = {}, currentDept = null, unsub = null, unsubDuty = null, selectedDate = null;
-let dutyData = {}; // 감독조: allData와 분리 (agendas 구독이 allData를 통째로 덮어써서 지워지는 문제 방지)
+let allData = {}, currentDept = null, unsub = null, selectedDate = null;
 // 협의록 상태: 삭제된 항목 키 set, 결과 입력값
 let minRemovedCal    = new Set();
 let minRemovedNodate = new Set();
@@ -559,8 +558,6 @@ window.toggleLike = function(agoraKey){
 
 function subscribeData(){
   if(unsub) unsub();
-  if(unsubDuty) unsubDuty();
-  dutyData = {}; // 주차 변경 시 이전 주 감독조가 남지 않도록 초기화
   unsub = onValue(ref(db,`agendas/${selectedWeek.key}`), snap => {
     allData = snap.val()||{};
     renderAll();
@@ -569,11 +566,6 @@ function subscribeData(){
       else refreshAgoraList();
     }
     if(document.getElementById('section-agora-nav') && document.getElementById('section-agora-nav').style.display !== 'none') renderAgoraNav();
-  });
-  // 감독조 Firebase 구독 (주차별, 해제 가능하게)
-  unsubDuty = onValue(ref(db, `duty_roster/${selectedWeek.key}`), snap => {
-    dutyData = snap.val() || {};
-    renderDutyRoster();
   });
 }
 // 아고라 최상위 경로 구독 (주차 무관, 앱 시작 시 한 번)
@@ -668,34 +660,7 @@ function renderCalendar(){
   let ch='',cn=1,hc=false; DEPTS.forEach(d=>{ getDiscussItems(d.id).forEach(([,it])=>{ hc=true; const v=isVip(d.id); ch+=`<div class="discuss-row"><div class="discuss-num">${cn++}</div><div><div class="discuss-dept ${v?'vip':''}">${d.name}</div><div class="discuss-text">${esc(it.text)}</div></div></div>`; }); });
   if(hc) html+=`<div style="margin-top:20px"><div class="discuss-section"><div class="discuss-section-title">💬 건의 및 논의사항</div>${ch}</div></div>`;
 
-  // 감독조 명단 캘린더 하단에 추가
-  const dutyHtml = renderDutyRosterHtml();
-  if(dutyHtml) html += dutyHtml;
-
   el.innerHTML=html;
-}
-
-function renderDutyRosterHtml(){
-  const days = getCalDays(selectedWeek.sun).slice(1,6); // 월~금
-  const dayNames = ['월','화','수','목','금'];
-  const hasDuty = days.some(d => dutyData[d.dateKey]);
-  if(!hasDuty) return '';
-  let html = `<div style="margin-top:20px;background:#fff;border:1.5px solid var(--blue100);border-radius:14px;overflow:hidden">
-    <div style="padding:12px 16px;background:var(--blue50);border-bottom:1px solid var(--blue100);font-size:14px;font-weight:700;color:var(--blue700)">🌙 야간 자기주도학습 감독조</div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr)">`;
-  days.forEach((d,i) => {
-    const name = dutyData[d.dateKey] || '';
-    html += `<div style="padding:12px 8px;text-align:center;${i<4?'border-right:1px solid var(--blue50)':''}">
-      <div style="font-size:12px;font-weight:700;color:var(--blue500);margin-bottom:6px">${dayNames[i]}요일</div>
-      <div style="font-size:14px;color:${name?'var(--grey800)':'var(--grey300)'};font-weight:${name?'600':'400'}">${name||'미정'}</div>
-    </div>`;
-  });
-  html += `</div></div>`;
-  return html;
-}
-
-function renderDutyRoster(){
-  renderCalendar();
 }
 
 /* ══════════════════════════════════════
@@ -1059,31 +1024,6 @@ function renderModalShell(){
   const db2=`<button class="date-btn no-date selected" id="dbn-none" onclick="window.pickDate(null,null)">날짜 없음</button>`+
     days.map(d=>`<button class="date-btn" id="dbn-${d.dateKey}" onclick="window.pickDate('${d.label}','${d.dateKey}')">${d.label}</button>`).join('');
 
-  // 교무기획부 전용 감독조 편성 섹션
-  const isEduPlan = currentDept && currentDept.id === 'edu_plan';
-  const weekDays  = ['월','화','수','목','금'];
-  const weekDayKeys = getCalDays(selectedWeek.sun).slice(1,6); // 월~금
-
-  const dutySectionHtml = isEduPlan ? `
-    <hr class="section-divider">
-    <p class="section-label" style="color:var(--blue500)">🌙 야간 자기주도학습 감독조 편성</p>
-    <div style="display:flex;flex-direction:column;gap:8px" id="dutyRosterList">
-      ${weekDayKeys.map((d,i)=>{
-        const saved = dutyData[d.dateKey] || '';
-        return `<div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:13px;font-weight:700;color:var(--blue600);min-width:32px;background:var(--blue50);padding:4px 8px;border-radius:8px;text-align:center">${weekDays[i]}</span>
-          <input type="text" id="duty-${d.dateKey}"
-            value="${saved.replace(/"/g,'&quot;')}"
-            placeholder="감독 교사 이름"
-            style="flex:1;padding:8px 12px;border:1.5px solid var(--grey300);border-radius:8px;font-size:14px;font-family:inherit;outline:none"
-            onfocus="this.style.borderColor='var(--blue500)'"
-            onblur="this.style.borderColor='var(--grey300)'" />
-          <button onclick="window.saveDuty('${d.dateKey}')"
-            style="background:var(--blue500);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">저장</button>
-        </div>`;
-      }).join('')}
-    </div>` : '';
-
   document.getElementById('modalBody').innerHTML=`<div class="modal-body">
     <p class="section-label">현재 안건 목록</p><div class="item-list" id="itemList"></div>
     <p class="section-label">날짜 선택 (선택사항)</p><div class="date-picker">${db2}</div>
@@ -1093,7 +1033,6 @@ function renderModalShell(){
     <p class="section-label">건의 및 논의사항 목록</p><div class="discuss-list" id="discussList"></div>
     <p class="section-label">건의 및 논의사항 추가</p>
     <div class="input-row"><textarea id="newDiscussText" placeholder="건의 및 논의사항을 입력하세요"></textarea><button class="btn-add amber" onclick="window.addDiscuss()">+ 추가</button></div>
-    ${dutySectionHtml}
     </div>`;
   document.getElementById('modalFoot').innerHTML=`<button class="btn-secondary" onclick="closeModal()">닫기</button>`;
   refreshItemList(); refreshDiscussList();
@@ -1122,20 +1061,6 @@ function refreshDiscussList(){
 window.pickDate=(label,dateKey)=>{ selectedDate=dateKey?{label,dateKey}:null; document.querySelectorAll('.date-btn').forEach(b=>b.classList.remove('selected')); (dateKey?document.getElementById(`dbn-${dateKey}`):document.getElementById('dbn-none'))?.classList.add('selected'); };
 window.toggleDateEdit=key=>document.getElementById(`dedit-${key}`)?.classList.toggle('open');
 window.setItemDate=(key,label,dateKey)=>{ update(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/${key}`),{dateLabel:label||null,dateKey:dateKey||null}); document.getElementById(`dedit-${key}`)?.classList.remove('open'); };
-/* ── 감독조 편성 저장 ── */
-window.saveDuty = function(dateKey){
-  const val = (document.getElementById(`duty-${dateKey}`)?.value||'').trim();
-  const dutyRef = ref(db, `duty_roster/${selectedWeek.key}/${dateKey}`);
-  if(val){
-    set(dutyRef, val);
-  } else {
-    remove(dutyRef);
-  }
-  // 저장 피드백
-  const btn = document.querySelector(`button[onclick="window.saveDuty('${dateKey}')"]`);
-  if(btn){ btn.textContent='✓ 저장됨'; btn.style.background='var(--green500)';
-    setTimeout(()=>{ btn.textContent='저장'; btn.style.background='var(--blue500)'; }, 1500); }
-};
 
 window.addItem=()=>{ const t=(document.getElementById('newItemText').value||'').trim(); if(!t) return; const k=Date.now().toString(),data={text:t}; if(selectedDate){data.dateLabel=selectedDate.label;data.dateKey=selectedDate.dateKey;} set(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/${k}`),data); document.getElementById('newItemText').value=''; selectedDate=null; document.querySelectorAll('.date-btn').forEach(b=>b.classList.remove('selected')); document.getElementById('dbn-none')?.classList.add('selected'); };
 window.delItem=key=>{ if(!confirm('삭제할까요?')) return; remove(ref(db,`agendas/${selectedWeek.key}/${currentDept.id}/${key}`)); };
