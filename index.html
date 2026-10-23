@@ -436,7 +436,7 @@
     </div>
   </div>
 
-<div class="version-bar"><span>🛠 v24 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
+<div class="version-bar"><span>🛠 v25 · 2026.10 · 창현고 업무 소통방 시스템</span></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -997,7 +997,7 @@ function renderAgoraModal(){
   document.getElementById('modalBody').innerHTML=`<div class="agora-modal-body">
     <p class="section-label" style="color:var(--blue400)">자유제안 및 토론 목록</p>
     <div id="agoraList">${!items.length?'<p style="font-size:13px;color:#4ade80;margin-bottom:12px">아직 제안이 없습니다. 첫 번째로 제안해보세요!</p>':
-      items.map(([k,it],i)=>`<div class="agora-item-row"><span class="agora-item-num">${i+1}.</span><span class="agora-item-text">${esc(it.text)}</span><button class="del-btn" onclick="window.delAgora('${k}')">×</button></div>`).join('')}</div>
+      items.map(([k,it],i)=>`<div class="agora-item-row"><span class="agora-item-num">${i+1}.</span><span class="agora-item-text">${esc(it.text)}</span><button class="del-btn" data-akey="${k}" data-ismine="${(it.authorId && it.authorId===window._myId)?'1':'0'}" onclick="window.deleteAgoraItem(this.dataset.akey,this.dataset.ismine)">×</button></div>`).join('')}</div>
     <p class="section-label" style="color:var(--blue400);margin-top:14px">새 제안 추가</p>
     <div class="agora-input-row"><textarea id="newAgoraText" placeholder="자유롭게 제안하거나 토론하고 싶은 내용을 입력하세요"></textarea>
     <button class="btn-add" onclick="window.addAgora()">+ 추가</button></div></div>`;
@@ -1007,10 +1007,10 @@ function refreshAgoraList(){
   const el=document.getElementById('agoraList'); if(!el) return;
   const items=getAgoraItems();
   el.innerHTML=!items.length?'<p style="font-size:13px;color:#4ade80;margin-bottom:12px">아직 제안이 없습니다.</p>':
-    items.map(([k,it],i)=>`<div class="agora-item-row"><span class="agora-item-num">${i+1}.</span><span class="agora-item-text">${esc(it.text)}</span><button class="del-btn" onclick="window.delAgora('${k}')">×</button></div>`).join('');
+    items.map(([k,it],i)=>`<div class="agora-item-row"><span class="agora-item-num">${i+1}.</span><span class="agora-item-text">${esc(it.text)}</span><button class="del-btn" data-akey="${k}" data-ismine="${(it.authorId && it.authorId===window._myId)?'1':'0'}" onclick="window.deleteAgoraItem(this.dataset.akey,this.dataset.ismine)">×</button></div>`).join('');
 }
 window.addAgora=()=>{ const t=(document.getElementById('newAgoraText').value||'').trim(); if(!t) return; const ts=Date.now(); set(ref(db,`agora/${ts}`),{text:t,createdAt:ts,authorId:window._myId}); document.getElementById('newAgoraText').value=''; };
-window.delAgora=key=>{ if(!confirm('삭제할까요?')) return; remove(ref(db,`agora/${key}`)); };
+window.delAgora=key=>window.deleteAgoraItem(key,'0'); /* 옛 경로 호환: 항상 관리자 코드 요구 */
 
 /* ── 일반 부서 모달 ── */
 window.openDept=function(id){
